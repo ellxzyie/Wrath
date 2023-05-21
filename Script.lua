@@ -329,7 +329,7 @@ local Commands = {
     "unkcf -- turns kcf off";
     "rb -- rainbow bullets";
 	"unrb -- turns off rainbow bullets";
-    "=== ARREST ===";
+    "fly -- Makes you fly (Obviously) .unfly to disable (Obviously) Mobile compatible (Using GUI)";
     "sa [plr] -- spam arrest plr";
     "unsa / breaksa -- breaks spam arrest";
     "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
@@ -2461,32 +2461,32 @@ background.BackgroundTransparency = 0.5
 background.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 background.Parent = gui
 -- I suck at creating GUI so its NOT even aligned properly
-local buttonSize = UDim2.new(0, background.Size.X.Offset / 4, 0, background.Size.Y.Offset / 4)
+local buttonSize = UDim2.new(0, background.Size.X.Offset / 4 * 1.5, 0, background.Size.Y.Offset / 4 * 1.5)
 
 local buttonW = Instance.new("TextButton")
 buttonW.Size = buttonSize
-buttonW.Position = UDim2.new(0.5, -buttonSize.X.Offset / 2, 0, 0)
+buttonW.Position = UDim2.new(0.7, -buttonSize.X.Offset / 2, 0, 0)
 buttonW.AnchorPoint = Vector2.new(0.5, 0)
 buttonW.Text = "W"
 buttonW.Parent = background
 
 local buttonA = Instance.new("TextButton")
 buttonA.Size = buttonSize
-buttonA.Position = UDim2.new(0, 0, 0.5, -buttonSize.Y.Offset / 2)
+buttonA.Position = UDim2.new(0, 0, 0.7, -buttonSize.Y.Offset / 2)
 buttonA.AnchorPoint = Vector2.new(0, 0.5)
 buttonA.Text = "A"
 buttonA.Parent = background
 
 local buttonS = Instance.new("TextButton")
 buttonS.Size = buttonSize
-buttonS.Position = UDim2.new(0.5, -buttonSize.X.Offset / 2, 1, -buttonSize.Y.Offset)
+buttonS.Position = UDim2.new(0.5, -buttonSize.X.Offset / 9, 1.6, -buttonSize.Y.Offset * 1.5)
 buttonS.AnchorPoint = Vector2.new(0.5, 1)
 buttonS.Text = "S"
 buttonS.Parent = background
 
 local buttonD = Instance.new("TextButton")
 buttonD.Size = buttonSize
-buttonD.Position = UDim2.new(1, -buttonSize.X.Offset, 0.5, -buttonSize.Y.Offset / 2)
+buttonD.Position = UDim2.new(1, -buttonSize.X.Offset * 0.01, 0.7, -buttonSize.Y.Offset / 2)
 buttonD.AnchorPoint = Vector2.new(1, 0.5)
 buttonD.Text = "D"
 buttonD.Parent = background
@@ -2530,6 +2530,7 @@ end)
 local function destroyGUI()
     gui:Destroy()
 end
+
 local function autodestroyGUI()
 repeat task.wait() until not States.NowFlying
 destroyGUI()
