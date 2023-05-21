@@ -14,6 +14,65 @@ if game.Players.LocalPlayer.Character.Humanoid.Health == 0 then
     end
 end
 wait(0.4)
+--Mobile GUI check
+local isMobile = game:GetService("UserInputService").TouchEnabled
+if isMobile then
+local gui = Instance.new("ScreenGui")
+gui.Name = "MovableGUI"
+gui.Parent = game.Players.LocalPlayer.PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 50, 0, 50)
+frame.Position = UDim2.new(0, 10, 0.5, -25)
+frame.BackgroundTransparency = 0.5
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.Draggable = true
+frame.Parent = gui
+
+local buttonH = Instance.new("TextButton")
+buttonH.Size = UDim2.new(0, 40, 0, 20)
+buttonH.Position = UDim2.new(0, 5, 0, 5)
+buttonH.Text = "H"
+buttonH.Parent = frame
+
+local buttonF = Instance.new("TextButton")
+buttonF.Size = UDim2.new(0, 40, 0, 20)
+buttonF.Position = UDim2.new(0, 5, 0, 30)
+buttonF.Text = "F"
+buttonF.Parent = frame
+
+local buttonC = Instance.new("TextButton")
+buttonC.Size = UDim2.new(0, 40, 0, 20)
+buttonC.Position = UDim2.new(0, 5, 0, 55)
+buttonC.Text = "C"
+buttonC.Parent = frame
+
+local screenSize = game:GetService("GuiService"):GetScreenResolution()
+local isMobile = game:GetService("UserInputService").TouchEnabled
+
+if isMobile then
+    frame.Position = UDim2.new(1, -60, 0, 10) 
+else
+    local guiWidth = frame.Size.X.Offset
+    local guiHeight = frame.Size.Y.Offset
+    local margin = 10 
+
+    frame.Position = UDim2.new(0, screenSize.X - guiWidth - margin, 0.5, -guiHeight / 2)
+end
+
+buttonH.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "H", false, game)
+end)
+
+buttonF.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "F", false, game)
+end)
+
+buttonC.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
+end)
+print("User is on mobile, loading the Mobile GUI quick access")
+end
 local ExecutionTime = tick();
 
 ------- MAIN SCRIPT -------
@@ -2446,7 +2505,6 @@ end
     if CMD("fly") then
        States.NowFlying = true
        startFly()
-       local isMobile = game:GetService("UserInputService").TouchEnabled
        if isMobile then
 local gui = Instance.new("ScreenGui")
 gui.Name = "DpadGUI"
