@@ -1,2 +1,5 @@
-# Wrath
-Prison life script
+Wrath admin totally not skidded
+
+ 
+ 
+ 
