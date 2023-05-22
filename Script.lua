@@ -975,100 +975,7 @@ local Pinata = false
 local AutoSpeed = false
 local SavedOldTeam
 local SavedSpeed
-local function LocalPlayer7434sRapidFire()
-local Players = game:GetService("Players")
-
-local LocalPlayer = Players.LocalPlayer
-
-repeat task.wait()
-until game:GetService("ReplicatedStorage"):FindFirstChild("ShootEvent")
-
-local ShootEvent = game:GetService("ReplicatedStorage").ShootEvent
-ShootEvent.Parent = workspace
-local FakeShootEvent = Instance.new("RemoteEvent",game:GetService("ReplicatedStorage"))
-FakeShootEvent.Name = "ShootEvent"
-
-local function PickUp(Gun)
-	workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS:FindFirstChild(Gun, true):FindFirstChildOfClass("Part"))
-end
-
-local enable = true
-
-Players.LocalPlayer.CharacterAdded:Connect(function(Character)
-	if not enable then return end
-	local Listed = {}
-	Character.ChildAdded:Connect(function(Child)
-		if not Listed[Child] and Child:IsA("Tool") then
-			Listed[Child] = true
-			local Module = Child:FindFirstChildOfClass("ModuleScript") and require(Child:FindFirstChildOfClass("ModuleScript"))
-			if Module then
-				task.spawn(function()
-					repeat task.wait()
-						Module.AutoFire = true
-						Module.FireRate = 0
-						Module.Spread = 100
-						Module.StoredAmmo = math.huge
-						Module.CurrentAmmo = math.huge
-						Module.ReloadTime = 0
-						game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Child)
-					until not Child or not Child.Parent
-				end)
-			end
-		end
-	end)
-end)
-
-local YieldFunctionDelayed = 0.8
-
-local Events = {}
-local Ticked = tick()
-local function YieldFunction()
-	if tick()-Ticked < YieldFunctionDelayed then return end
-	task.spawn(function()
-		Ticked = tick()
-		task.wait(YieldFunctionDelayed)
-		local Gun = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChild("Tool")
-		if LocalPlayer.Character:FindFirstChild("Taser") then
-			Gun = LocalPlayer.Character.Taser
-		end
-		ShootEvent:FireServer(Events, Gun)
-		if Gun.Name ~= "Taser" then
-			game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Gun)
-		end
-		Events = {}
-	end)
-end
-
-MetamethodHook = hookmetamethod(game, "__namecall", function(...)
-	local Arguaments = {...}
-	local Method = getnamecallmethod()
-	if Method == "FireServer" and Arguaments[1] == FakeShootEvent and enable then
-		for i = 1,#Arguaments[2] do
-			Events[#Events + 1] = Arguaments[2][i]
-		end
-		YieldFunction()
-		return
-	end
-	return MetamethodHook(...)
-end)
-
-LocalPlayer.Chatted:Connect(function(Message)
-	if string.lower(Message) == ".unfastfire" or string.lower(Message) == ".unfirerate" and enable then
-		enable = false
-		game:GetService("StarterGui"):SetCore("SendNotification",{
-			Title = "LocalPlayer#7434",
-			Text = "Rapid fire disabled!"
-		})
-		ShootEvent.Parent = game:GetService("ReplicatedStorage")
-		FakeShootEvent:Destroy()
-	end
-end)
-
-game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "LocalPlayer#7434",
-	Text = "Rapid fire enabled!"
-})
-end
+local placeholder --placeholder (gonna change later)
 local speed = 50 
 
 local c
@@ -2442,25 +2349,7 @@ end
         Notify("Success", " Disabled forcefield.", 2); 
     end;
     if CMD("fastfire") or CMD("firerate") then
-        LocalPlayer7434sRapidFire()
-        SavePos()
-        local player = game.Players.LocalPlayer
-    if player.TeamColor == BrickColor.new("Really red") then
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-        workspace.Remote.TeamEvent:FireServer("Bright blue")
-        local crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        workspace['Criminals Spawn'].SpawnLocation.CFrame = crimspawnpoint
-    elseif player.TeamColor == BrickColor.new("Bright blue") then
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-        workspace.Remote.TeamEvent:FireServer("Bright blue")
-    else
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-    end
-        repeat
-        wait(0.01)
-        until game.Players.LocalPlayer.TeamColor == BrickColor.new("Bright blue") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-        LoadPos()
-        Notify("Success", " Enabled RapidFire. (Type .unfastfire/.unfirerate to disable)", 2);
+        print("placeholder")
     end;
     if CMD("antiarrest") then
         States.AntiArrest = true
