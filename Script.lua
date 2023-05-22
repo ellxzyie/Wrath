@@ -1056,7 +1056,7 @@ game:GetService("RunService").Heartbeat:connect(function (step) -- The actual fl
 		end
 	end
 end)
-
+--This is the whole autorespawn code
 local hasExecutedGuns = false
 local hasDiedasCriminals = false
 local hasDiedasGuards = false
@@ -1148,7 +1148,7 @@ end
 
 diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
 player.CharacterAdded:Connect(characterAdded)
-
+-------------------------------------------------------------------------------------------------------------------------------------------------
 function Kill(PLAYERS)
     -- Check if the player has AK-47 in the backpack before moving
     local hasAK47 = false
@@ -2229,6 +2229,25 @@ function UseCommand(MESSAGE)
                 SaveCameraPos()
 		workspace.Remote.TeamEvent:FireServer(OldTeam.Name)
                 LoadCameraPos()
+                elseif OldTeam == BrickColor.new("Really red") then
+                                 wait(1.4)
+                                 local crimspawnpoint
+                                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 SaveCameraPos()
+                                 if #game:GetService("Teams").Guards:GetPlayers() < 8 then
+		                     workspace.Remote.TeamEvent:FireServer("Bright blue")
+	                         else
+		                     workspace.Remote.TeamEvent:FireServer("Bright orange")
+	                         end
+                                 LoadCameraPos()
+                                 repeat
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
             Notify("Success", " Opened doors!", 2);
@@ -2287,6 +2306,24 @@ function UseCommand(MESSAGE)
                 if SavedOldTeam ~= BrickColor.new("Really red") then
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
 		    workspace.Remote.TeamEvent:FireServer(SavedOldTeam.Name)
+                elseif SavedOldTeam == BrickColor.new("Really red") then
+                                 local crimspawnpoint
+                                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 SaveCameraPos()
+                                 if #game:GetService("Teams").Guards:GetPlayers() < 8 then
+		                     workspace.Remote.TeamEvent:FireServer("Bright blue")
+	                         else
+		                     workspace.Remote.TeamEvent:FireServer("Bright orange")
+	                         end
+                                 LoadCameraPos()
+                                 repeat
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
         Notify("Success", " Stopped LoopOpening doors!", 2);  
@@ -2384,14 +2421,18 @@ end
         States.AntiArrest = true
         Notify("Success", " Enabled antiarrest", 2);
         while States.AntiArrest do
-        if getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent) then
-            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
-            SaveCameraPos()
 	    for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
 		v:Disable()
 	    end
-        end
-            task.wait()
+--Autorespawn when arrested (Finally got it working after 23923 attempts and shifted again because i originally put it on --// init: but it interferes with the gui)
+workspace.Remote.arrestPlayer.OnClientEvent:Connect(function()
+        print("debug_player is arrested")
+	task.wait(6)
+        print("debug_player is arrested done")
+        SaveCameraPos()
+        diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+end)
+            task.wait(.1)
         end
     end;
     if CMD("unantiarrest") then
@@ -2839,14 +2880,68 @@ spawn(autodestroyGUI)
         repeat
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(786.09967, 98.1877518, 2386.16528, -0.572712839, -1.94576568e-08, -0.819756091, 4.30706315e-09, 1, -2.67449884e-08, 0.819756091, -1.88479383e-08, -0.572712839)
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
-        task.wait(.2)
+        task.wait(.1)
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
         until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = originalPosition
     end;	
-    if CMD("givekey") or CMD("key") then
-        Notify("Error", Args[2] .. " This command does not exist yet!", 2);
+    if CMD("keycard") or CMD("key") or CMD("card") then
+	SavePos()
+	local oldclientteam = game.Players.LocalPlayer.TeamColor
+	local client = game.Players.LocalPlayer
+	local char = client.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	local single = workspace.Prison_ITEMS.single
+	local object = single:FindFirstChild("Key card")
+	if workspace.Prison_ITEMS.single:FindFirstChild("Key card") then
+		root.CFrame = object:GetPivot()
+		repeat
+			ItemHandler(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP);
+			task.wait()
+		until client.Backpack:FindFirstChild("Key card")
+		LoadPos()
+		Notify("Success", "Picked up keycard", 2);
+	elseif #game:GetService("Teams").Guards:GetPlayers() < 8 then
+		diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+		workspace.Remote.TeamEvent:FireServer("Bright blue")
+		repeat task.wait() until game.Players.LocalPlayer.TeamColor == BrickColor.new("Bright blue")
+		repeat task.wait(0.5)
+			game.Players.LocalPlayer.Character:WaitForChild("Humanoid").Health = 0
+			task.wait(0.2)
+			workspace.Remote.TeamEvent:FireServer("Bright blue")
+		until workspace.Prison_ITEMS.single:FindFirstChild("Key card")
+		if oldclientteam ~= BrickColor.new("Bright blue") then
+			if oldclientteam ~= BrickColor.new("Really red") then
+				diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+				workspace.Remote.TeamEvent:FireServer(oldclientteam.Name)
+                        elseif oldclientteam == BrickColor.new("Really red") then
+                                 local crimspawnpoint
+                                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 SaveCameraPos()
+                                 if #game:GetService("Teams").Guards:GetPlayers() < 8 then
+		                     workspace.Remote.TeamEvent:FireServer("Bright blue")
+	                         else
+		                     workspace.Remote.TeamEvent:FireServer("Bright orange")
+	                         end
+                                 LoadCameraPos()
+                                 repeat
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
+			end
+		end
+		repeat task.wait()
+			ItemHandler(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP);
+		until game.Players.LocalPlayer.Backpack:FindFirstChild("Key card")
+		Notify("Success", "Obtained keycard", 2);
+	else
+		Notify("Error", "Guards team full and there is no keycards dropped", 2);
+	end
     end;
     if CMD("givehandcuffs") or CMD("handcuffs") then
         Notify("Error", Args[2] .. " This command does not exist yet!", 2);
@@ -13088,6 +13183,25 @@ function UseRankedCommands(MESSAGE, Admin)
                 SaveCameraPos()
 		workspace.Remote.TeamEvent:FireServer(OldTeam.Name)
                 LoadCameraPos()
+                elseif OldTeam == BrickColor.new("Really red") then
+                                 wait(1.4)
+                                 local crimspawnpoint
+                                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 SaveCameraPos()
+                                 if #game:GetService("Teams").Guards:GetPlayers() < 8 then
+		                     workspace.Remote.TeamEvent:FireServer("Bright blue")
+	                         else
+		                     workspace.Remote.TeamEvent:FireServer("Bright orange")
+	                         end
+                                 LoadCameraPos()
+                                 repeat
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
             Chat("/w " .. Admin.Name .. " Success! Opened doors!");
@@ -17116,14 +17230,6 @@ CrimSpawn()
 wait(0.2)
 game.Players.LocalPlayer.Character.Humanoid.Health = 0
 print("Resetted character to prevent autorespawn bug")
-local function Contactrobloxservers()
-repeat
-task.wait(.7)
-CheckOwnedGamepass()
-until CheckOwnedGamepass()
-print("Succesfully Contacted roblox server for giving guns")
-end
-spawn(Contactrobloxservers)
 
 --// More ASA
 for i,v in pairs(workspace:FindFirstChild("Criminals Spawn"):GetChildren()) do
@@ -17289,4 +17395,3 @@ for _, Player in pairs(Players:GetPlayers()) do
         end;
     end;
 end;
-print("omg it loaded without any errors considering that this script has a thousand errors")
