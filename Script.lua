@@ -2839,7 +2839,7 @@ spawn(autodestroyGUI)
         repeat
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(786.09967, 98.1877518, 2386.16528, -0.572712839, -1.94576568e-08, -0.819756091, 4.30706315e-09, 1, -2.67449884e-08, 0.819756091, -1.88479383e-08, -0.572712839)
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
-        task.wait()
+        task.wait(.2)
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
         until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
