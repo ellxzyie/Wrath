@@ -973,9 +973,10 @@ local LoopOpenDoors = false
 local AntiPunish = false
 local Pinata = false
 local AutoSpeed = false
+local fastfirerate = false
 local SavedOldTeam
 local SavedSpeed
-local placeholder --placeholder (gonna change later)
+local placeholder
 local speed = 50 
 
 local c
@@ -2349,7 +2350,35 @@ end
         Notify("Success", " Disabled forcefield.", 2); 
     end;
     if CMD("fastfire") or CMD("firerate") then
-        print("placeholder")
+local plr = game.Players.LocalPlayer
+local Tool = plr.Character:FindFirstChildOfClass("Tool")
+local gun = require(Tool.GunStates)
+gun["FireRate"] = -math.huge
+gun["AutoFire"] = true
+plr.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
+if not Tool then
+    Notify("Failed", " Must be holding a gun!", 2);
+else
+    Notify("Success", "Fastfirerate applied", 2);
+end
+    end;
+    if CMD("autofirerate") or CMD("autofastfirerate") or CMD("afastfire") or CMD("affr") then
+fastfirerate = not fastfirerate
+if fastfirerate then
+Notify("Success", "Enabled autofirerate.", 2);
+else
+Notify("Success", "Disabled autofirerate.", 2);
+end
+while fastfirerate do
+if game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool") then
+local plr = game.Players.LocalPlayer
+local Tool = plr.Character:FindFirstChildOfClass("Tool")
+local gun = require(Tool.GunStates)
+gun["FireRate"] = -math.huge
+gun["AutoFire"] = true
+end
+task.wait()
+end
     end;
     if CMD("antiarrest") then
         States.AntiArrest = true
@@ -2765,36 +2794,56 @@ spawn(autodestroyGUI)
     end;
     if CMD("shotgun") or CMD("shotty") then
         local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        game.Players.LocalPlayer.Character:MoveTo(Vector3.new(822.972412, 97.9999237, 2244.22046))
-        task.wait(1/10)
+        repeat
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(823.65094, 97.9999161, 2245.10767, -0.999999464, -1.04425968e-10, 0.0010568779, 4.0250827e-11, 1, 1.36890719e-07, -0.0010568779, 1.36890691e-07, -0.999999464)
+        ItemHandler(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP);
+        task.wait()
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("Remington 870")
         Notify("Success", "Picked up shotgun", 2);
-        wait(0.4)
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
     end;
     if CMD("ak47") or CMD("ak") then
         local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-936.941406, 96.5279617, 2056.72266))
-        task.wait(1/10)
+        repeat
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-936.604492, 96.554924, 2056.47314, 0.993467629, 3.80429599e-09, -0.11411453, -2.51227394e-09, 1, 1.14659642e-08, 0.11411453, -1.1104377e-08, 0.993467629)
+        ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
+        task.wait()
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
         Notify("Success", "Picked up AK-47", 2);
-        wait(0.4)
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
     end;
     if CMD("pistol") or CMD("m9") then
         local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        game.Players.LocalPlayer.Character:MoveTo(Vector3.new(822.972412, 97.9999237, 2244.22046))
-        task.wait(1/10)
+        repeat
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(823.65094, 97.9999161, 2245.10767, -0.999999464, -1.04425968e-10, 0.0010568779, 4.0250827e-11, 1, 1.36890719e-07, -0.0010568779, 1.36890691e-07, -0.999999464)
+        ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
+        task.wait()
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("M9")
         Notify("Success", "Picked up m9", 2);
-        wait(0.4)
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
     end;
     if CMD("m4a1") or CMD("m4") then
-        Notify("Error", Args[2] .. " This command does not exist yet!", 2);
+        Notify("Error", Args[2] .. " This command is a place holder, A.K.A i am too lazy to add because i dont have roebucks!", 2);
     end;
     if CMD("hammer") or CMD("ham") then
-        Notify("Error", Args[2] .. " This command does not exist yet!", 2);
+        local originalPosition = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+        repeat
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(774.635742, 98.1899185, 2523.05762, 0.104013823, 8.12612377e-09, 0.994575858, -1.92118872e-08, 1, -6.16124174e-09, -0.994575858, -1.84668245e-08, 0.104013823)
+        ItemHandler(workspace.Prison_ITEMS.single["Hammer"].ITEMPICKUP);
+        task.wait()
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("Hammer")
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = originalPosition
     end;
-    if CMD("giveknife") or CMD("knife") then
-        Notify("Error", Args[2] .. " This command does not exist yet!", 2);
+    if CMD("knive") or CMD("knife") then
+        local originalPosition = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+        repeat
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(786.09967, 98.1877518, 2386.16528, -0.572712839, -1.94576568e-08, -0.819756091, 4.30706315e-09, 1, -2.67449884e-08, 0.819756091, -1.88479383e-08, -0.572712839)
+        ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
+        ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = originalPosition
     end;	
     if CMD("givekey") or CMD("key") then
         Notify("Error", Args[2] .. " This command does not exist yet!", 2);
@@ -17240,3 +17289,4 @@ for _, Player in pairs(Players:GetPlayers()) do
         end;
     end;
 end;
+print("omg it loaded without any errors considering that this script has a thousand errors")
