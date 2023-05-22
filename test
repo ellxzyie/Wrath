@@ -1,4 +1,1 @@
 -- later
-        gun = game.Players.LocalPlayer.Backpack:WaitForChild("Remington 870") or game.Players.LocalPlayer.Backpack:WaitForChild("AK-47") or game.Players.LocalPlayer.Backpack:WaitForChild("M9")
-        gunstates = require(gun.GunStates)
-        gunstates.Firerate = -math.huge
