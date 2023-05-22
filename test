@@ -1,1 +1,133 @@
--- later
+local gui = Instance.new("ScreenGui")
+gui.Name = "MovableGUI"
+gui.Parent = game.Players.LocalPlayer.PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 50, 0, 50)
+frame.Position = UDim2.new(0, 10, 0.5, -25)
+frame.BackgroundTransparency = 0.5
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.Draggable = true
+frame.Parent = gui
+
+local buttonH = Instance.new("TextButton")
+buttonH.Size = UDim2.new(0, 40, 0, 20)
+buttonH.Position = UDim2.new(0, 5, 0, 5)
+buttonH.Text = "H"
+buttonH.Parent = frame
+
+local buttonF = Instance.new("TextButton")
+buttonF.Size = UDim2.new(0, 40, 0, 20)
+buttonF.Position = UDim2.new(0, 5, 0, 30)
+buttonF.Text = "F"
+buttonF.Parent = frame
+
+local buttonC = Instance.new("TextButton")
+buttonC.Size = UDim2.new(0, 40, 0, 20)
+buttonC.Position = UDim2.new(0, 5, 0, 55)
+buttonC.Text = "C"
+buttonC.Parent = frame
+
+local screenSize = game:GetService("GuiService"):GetScreenResolution()
+local isMobile = game:GetService("UserInputService").TouchEnabled
+
+if isMobile then
+    frame.Position = UDim2.new(1, -60, 0, 10) 
+else
+    local guiWidth = frame.Size.X.Offset
+    local guiHeight = frame.Size.Y.Offset
+    local margin = 10 
+
+    frame.Position = UDim2.new(0, screenSize.X - guiWidth - margin, 0.5, -guiHeight / 2)
+end
+
+buttonH.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "H", false, game)
+end)
+
+buttonF.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "F", false, game)
+end)
+
+buttonC.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
+end)
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "DpadGUI"
+gui.Parent = game.Players.LocalPlayer.PlayerGui
+
+local isMobile = game:GetService("UserInputService").TouchEnabled
+
+local background = Instance.new("Frame")
+background.Size = UDim2.new(0, 100, 0, 100)
+background.Position = UDim2.new(0, 10, 1, -110)
+background.BackgroundTransparency = 0.5
+background.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+background.Parent = gui
+-- I suck at creating GUI so its NOT even aligned properly
+local buttonSize = UDim2.new(0, background.Size.X.Offset / 4 * 1.5, 0, background.Size.Y.Offset / 4 * 1.5)
+
+local buttonW = Instance.new("TextButton")
+buttonW.Size = buttonSize
+buttonW.Position = UDim2.new(0.7, -buttonSize.X.Offset / 2, 0, 0)
+buttonW.AnchorPoint = Vector2.new(0.5, 0)
+buttonW.Text = "W"
+buttonW.Parent = background
+
+local buttonA = Instance.new("TextButton")
+buttonA.Size = buttonSize
+buttonA.Position = UDim2.new(0, 0, 0.7, -buttonSize.Y.Offset / 2)
+buttonA.AnchorPoint = Vector2.new(0, 0.5)
+buttonA.Text = "A"
+buttonA.Parent = background
+
+local buttonS = Instance.new("TextButton")
+buttonS.Size = buttonSize
+buttonS.Position = UDim2.new(0.5, -buttonSize.X.Offset / 9, 1.6, -buttonSize.Y.Offset * 1.5)
+buttonS.AnchorPoint = Vector2.new(0.5, 1)
+buttonS.Text = "S"
+buttonS.Parent = background
+
+local buttonD = Instance.new("TextButton")
+buttonD.Size = buttonSize
+buttonD.Position = UDim2.new(1, -buttonSize.X.Offset * 0.01, 0.7, -buttonSize.Y.Offset / 2)
+buttonD.AnchorPoint = Vector2.new(1, 0.5)
+buttonD.Text = "D"
+buttonD.Parent = background
+
+local function sendKeyEvent(keyCode, isPressed)
+    game:GetService("VirtualInputManager"):SendKeyEvent(isPressed, keyCode, false, game)
+end
+
+buttonW.MouseButton1Down:Connect(function()
+    sendKeyEvent(Enum.KeyCode.W, true)
+end)
+
+buttonW.MouseButton1Up:Connect(function()
+    sendKeyEvent(Enum.KeyCode.W, false)
+end)
+
+buttonA.MouseButton1Down:Connect(function()
+    sendKeyEvent(Enum.KeyCode.A, true)
+end)
+
+buttonA.MouseButton1Up:Connect(function()
+    sendKeyEvent(Enum.KeyCode.A, false)
+end)
+
+buttonS.MouseButton1Down:Connect(function()
+    sendKeyEvent(Enum.KeyCode.S, true)
+end)
+
+buttonS.MouseButton1Up:Connect(function()
+    sendKeyEvent(Enum.KeyCode.S, false)
+end)
+
+buttonD.MouseButton1Down:Connect(function()
+    sendKeyEvent(Enum.KeyCode.D, true)
+end)
+
+buttonD.MouseButton1Up:Connect(function()
+    sendKeyEvent(Enum.KeyCode.D, false)
+end)
