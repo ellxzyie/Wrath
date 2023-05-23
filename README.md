@@ -1,4 +1,4 @@
-Wrath admin prison life script totally not skidded
+Wrath admin modified roblox prison life script 
 
  
 
@@ -10,4 +10,4 @@ Wrath admin prison life script totally not skidded
  
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Script.lua'))()
 
-Updates: Mobile GUI, Punch, Crawl, and Commandbar
+Updates: Mobile GUI, Punch, Crawl, and Commandbar, Added TeamEvent spam crash, Fixed antiarrest, and fixed other stuff
