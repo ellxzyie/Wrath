@@ -320,7 +320,7 @@ local Commands = {
     "dwp / delwaypoint [name] -- remove spawnpoint";
     "getwpnames / getwaypointnames -- gets waypoint names";
     "clwp -- clears waypoints";
-    "=== KILL CMDS ===";
+    "antiarrest -- Prevents you from being arrested and spawns you back to old position";
     "kill [plr] / kill guards, inmates, criminals -- kills a player, team, or all";
     "mkill [plr] -- melee kill player or all";
     "vkill [plr] -- void kill player (kills them by sending them to the void)";
@@ -358,20 +358,20 @@ local Commands = {
     "clos -- clear one shots";
     "clsb / clearshootback -- clears shoot back";
     "cltb / cleartaseback -- clears tase back";
-    "atc / autoteamchange -- toggles auto team change (changes your team if whoever you are killing is on the same team as you, true by default)";
+    "atc / autoteamchange -- toggles auto team change (placeholder command a.k.a i am too lazy to add code)";
     "shock / fence [plr] -- kills player with fence ";
     "fridge [plr] -- teleports player to the fidge ";
-    "=== GIVE ITEMS ===";
+    "tcrash / tscrash -- Crashes all players using TeamEvent spam (Can crash triggered(aka tiger) admin users but Might time you out and crash you depending on your potato device)";
     "armor -- gives armor (requires riot gamepass | only works on you)";
     "hipheight / height [Number] -- Changes your hipheight or makes you float";
     "speed / walkspeed [Number] -- Changes walkspeed";
     "forcefield / ff -- forcefield, obviously";
     "loopopendoors / loopdoors -- Loops open every doors";
     "antipunish / autoguard -- prevents you from being punished as guards";
-    "fastfire / firerate -- very fast fire rate made by localplayer";
+    "fastfire / firerate -- very fast fire rate ";
     "givecmds / gcmd [plr,all] -- gives commands to a player";
     "revokecmds / rcmds [plr,all] -- revokes cmds from player";
-    "givekey / key [plr] -- gives plr keycard";
+    "keycard / key / card -- Pickup or obtain keycard";
     "carspawn / car -- spawns a car";
     "opendoors / opensesame / opensaysme / doorsopen -- opens all doors, obviously";
     "=== GUN COMMANDS ===";
@@ -1150,14 +1150,7 @@ diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
 player.CharacterAdded:Connect(characterAdded)
 -------------------------------------------------------------------------------------------------------------------------------------------------
 function Kill(PLAYERS)
-    -- Check if the player has AK-47 in the backpack before moving
-    local hasAK47 = false
-    for _,item in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-        if item.Name == "AK-47" then
-            hasAK47 = true
-            break
-        end
-    end
+    local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
     SavePos()
     if not hasAK47 then
         SavePos()
@@ -1657,14 +1650,7 @@ function GetPlayer(STRING, PLAYER)
 end;
 
 function KillPlayers(TEAM, Whitelist)
-    -- Check if the player has AK-47 in the backpack before moving
-    local hasAK47 = false
-    for _,item in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-        if item.Name == "AK-47" then
-            hasAK47 = true
-            break
-        end
-    end
+    local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
     SavePos()
     if not hasAK47 then
         SavePos()
@@ -2564,6 +2550,12 @@ spawn(autodestroyGUI)
     if CMD("flyingspeed") or CMD("flyspeed") or CMD("fspeed") then
         speed = tonumber(Args[2])
         Notify("Success", "Changed flyspeed to " .. tonumber(Args[2]) .. ".");
+    end;
+    if CMD("tcrash") or CMD("tscrash") then
+Notify("Success", "Your client might timeout or CRASH depending on how potato it is.");
+for i = 1, 1000000 do
+    coroutine.wrap(TeamEvent)("Bright orange")
+end
     end;
     if CMD("nexus") or CMD("nex") then
         local Player = GetPlayer(Args[2], LocalPlayer)
@@ -13196,7 +13188,7 @@ function UseRankedCommands(MESSAGE, Admin)
                                  LoadCameraPos()
                                  repeat
                                  task.wait()
-	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+	                         crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
                                  workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
                                  until player.TeamColor == BrickColor.new("Really red")
                                  local object = workspace['Criminals Spawn'].SpawnLocation
