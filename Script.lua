@@ -361,7 +361,7 @@ local Commands = {
     "atc / autoteamchange -- toggles auto team change (placeholder command a.k.a i am too lazy to add code)";
     "shock / fence [plr] -- kills player with fence ";
     "fridge [plr] -- teleports player to the fidge ";
-    "tcrash / tscrash -- Crashes all players using TeamEvent spam (Can crash triggered(aka tiger) admin users but Might time you out and crash you depending on your potato device)";
+    "tcrash / tscrash / tspamcrash -- Crashes all players using TeamEvent spam (Only crashes potato devices and times you out)";
     "armor -- gives armor (requires riot gamepass | only works on you)";
     "hipheight / height [Number] -- Changes your hipheight or makes you float";
     "speed / walkspeed [Number] -- Changes walkspeed";
@@ -388,7 +388,7 @@ local Commands = {
     "unkcf -- turns kcf off";
     "rb -- rainbow bullets";
 	"unrb -- turns off rainbow bullets";
-    "fly -- Makes you fly (Obviously) .unfly to disable (Obviously) Mobile compatible (Using GUI)";
+    "fly -- .unfly to disable (Obviously) Mobile compatible (Using GUI)";
     "sa [plr] -- spam arrest plr";
     "unsa / breaksa -- breaks spam arrest";
     "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
@@ -649,12 +649,14 @@ function Arrest(PLR, TIMES)
             end
         else
             pcall(function()
-                while not PLR.Character["Head"]:FindFirstChildOfClass("BillboardGui") and IllegalRegion(PLR) do
+                while not PLR.Character.Head:FindFirstChildOfClass("BillboardGui") do
                 LocalPlayer.Character.Humanoid.Sit = false;
                 LocalPlayer.Character:SetPrimaryPartCFrame(PLR.Character.Head.CFrame * CFrame.new(0, 0, 1));
-                task.wait(0.15);
+                task.wait()
                 coroutine.wrap(ArrestEvent)(PLR, 1);
-                wait(0.2)
+                if PLR.TeamColor == BrickColor.new("Bright blue") or not IllegalRegion(PLR) or not Players:FindFirstChild(PLR.Name) then
+                    break
+                end
                 end
             end);
         end;
@@ -1151,17 +1153,16 @@ player.CharacterAdded:Connect(characterAdded)
 -------------------------------------------------------------------------------------------------------------------------------------------------
 function Kill(PLAYERS)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
-    SavePos()
     if not hasAK47 then
-        SavePos()
+        local mysavedpos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
+        task.wait(.01)
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
-        task.wait()
         until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
-        LoadPos()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mysavedpos
     end
 
     local Events = {};
@@ -1186,6 +1187,7 @@ function Kill(PLAYERS)
                             States.FriendlyFire = true
                             print("Changed Friendlyfire to true to kill criminals")
         if States.FriendlyFire then
+            SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
         end
                         end
@@ -1221,6 +1223,7 @@ function Kill(PLAYERS)
         rStorage.ShootEvent:FireServer(Events, Gun)
     end)
         if States.FriendlyFire then
+            SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
         end
     States.FriendlyFire = false
@@ -1651,17 +1654,16 @@ end;
 
 function KillPlayers(TEAM, Whitelist)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
-    SavePos()
     if not hasAK47 then
-        SavePos()
+        local mysavedpos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
+        task.wait(.01)
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
-        task.wait()
         until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
-        LoadPos()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mysavedpos
     end
 
     local Events = {};
@@ -1687,6 +1689,7 @@ print("Moved crimpad")
                             States.FriendlyFire = true
                             print("Changed Friendlyfire to true to kill criminals")
         if States.FriendlyFire then
+            SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
         end
                         end
@@ -1724,6 +1727,7 @@ print("Moved crimpad")
         rStorage.ShootEvent:FireServer(Events, Gun)
     end);
         if States.FriendlyFire then
+            SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
         end
     States.FriendlyFire = false
@@ -2551,8 +2555,9 @@ spawn(autodestroyGUI)
         speed = tonumber(Args[2])
         Notify("Success", "Changed flyspeed to " .. tonumber(Args[2]) .. ".");
     end;
-    if CMD("tcrash") or CMD("tscrash") then
+    if CMD("tcrash") or CMD("tscrash") or CMD("tspamcrash") then
 Notify("Success", "Your client might timeout or CRASH depending on how potato it is.");
+task.wait(1)
 for i = 1, 1000000 do
     coroutine.wrap(TeamEvent)("Bright orange")
 end
@@ -13273,9 +13278,7 @@ end
             local Player = GetPlayer(Args[2], Admin);
             if Player then
                 if CheckProtected(Player, "arrestcmds") or Player == Admin then
-                    AddToQueue(function()
                         Arrest(Player, 1);
-                    end);
                 else
                     WarnProtected(Admin, Player, "arrest");
                 end;
