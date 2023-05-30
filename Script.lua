@@ -1062,6 +1062,10 @@ end)
 local hasExecutedGuns = false
 local hasDiedasCriminals = false
 local hasDiedasGuards = false
+local isTeleportingToOldPosAndHasNoForceField = false
+local hasAlreadyDied = false
+local isChangingTeamToInmates = false
+local oldTeamIsCriminals = false
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local diedEvent
@@ -1069,6 +1073,7 @@ local diedpos
 
 local function died()
     diedEvent:Disconnect()
+    hasAlreadyDied = true
     if player.TeamColor == BrickColor.new("Really red") then
         hasDiedasCriminals = true
 	if #game:GetService("Teams").Guards:GetPlayers() < 8 then
@@ -1082,7 +1087,6 @@ local function died()
 	crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
         workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
         until player.TeamColor == BrickColor.new("Really red")
-        hasDiedasCriminals = false
     elseif player.TeamColor == BrickColor.new("Bright blue") then
     hasDiedasGuards = true
     local guardsTeam = game:GetService("Teams").Guards
@@ -1103,6 +1107,7 @@ end
 
 local function characterAdded()
     if diedpos then
+        -------------------------------if player.TeamColor ~= BrickColor.new("Medium stone grey") then (PLACEHOLDER)
         char = player.Character or player.CharacterAdded:Wait()
         print("Autorespawning")
         char:WaitForChild("HumanoidRootPart").CFrame = diedpos
@@ -1112,6 +1117,19 @@ local function characterAdded()
         end
         diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
         LoadCameraPos()
+        if not hasAlreadyDied and not isChangingTeamToInmates and player.TeamColor == BrickColor.new("Bright orange") and oldTeamIsCriminals and States.AntiArrest then
+        local crimspawnpoint
+        repeat
+        task.wait()
+	crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+        until player.TeamColor == BrickColor.new("Really red")
+        local object = workspace['Criminals Spawn'].SpawnLocation
+        local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+        object.CFrame = newPosition
+        oldTeamIsCriminals = false
+        end
+        hasAlreadyDied = false
         if States.AutoGivingGuns and not hasExecutedGuns then
         hasExecutedGuns = true
         print("debug_hasExecutedGuns has been set to true")
@@ -1134,17 +1152,22 @@ local function characterAdded()
         else
           print("debug_hasExecutedGuns has already executed guns, so not executing again.")
         end
-        if player.TeamColor == BrickColor.new("Really red") then
+        if hasDiedasCriminals then
+        repeat task.wait() until player.TeamColor == BrickColor.new("Really red")
         local object = workspace['Criminals Spawn'].SpawnLocation
         local newPosition = CFrame.new(Vector3.new(10, 100, 10))
         object.CFrame = newPosition
+        hasDiedasCriminals = false
         end
         if not game.Players.LocalPlayer.Character:FindFirstChild("ForceField") then
-            task.wait(.3)
+            isTeleportingToOldPosAndHasNoForceField = true
+            task.wait(.01)
             SaveCameraPos()
             char:WaitForChild("HumanoidRootPart").CFrame = diedpos
             LoadCameraPos()
+            isTeleportingToOldPosAndHasNoForceField = false
         end
+        -----------------------------------------end
     end
 end
 
@@ -1159,10 +1182,10 @@ function Kill(PLAYERS)
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
-        task.wait(.01)
+        task.wait()
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mysavedpos
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
     end
 
     local Events = {};
@@ -1223,8 +1246,9 @@ function Kill(PLAYERS)
         rStorage.ShootEvent:FireServer(Events, Gun)
     end)
         if States.FriendlyFire then
-            SaveCameraPos()
-            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+            print("placeholder")
+            --SaveCameraPos()
+            --diedpos = char:WaitForChild("HumanoidRootPart").CFrame
         end
     States.FriendlyFire = false
 end
@@ -1660,10 +1684,10 @@ function KillPlayers(TEAM, Whitelist)
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
-        task.wait(.01)
+        task.wait()
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mysavedpos
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
     end
 
     local Events = {};
@@ -1727,8 +1751,9 @@ print("Moved crimpad")
         rStorage.ShootEvent:FireServer(Events, Gun)
     end);
         if States.FriendlyFire then
-            SaveCameraPos()
-            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+            print("Placeholder")
+            --SaveCameraPos()
+            --diedpos = char:WaitForChild("HumanoidRootPart").CFrame
         end
     States.FriendlyFire = false
 end;
@@ -2407,27 +2432,26 @@ end
 task.wait()
 end
     end;
-    if CMD("antiarrest") then
-        States.AntiArrest = true
-        Notify("Success", " Enabled antiarrest", 2);
+    if CMD("antiarrest") or CMD("aar") then
+        States.AntiArrest = not States.AntiArrest
+        if States.AntiArrest then
+        Notify("Success", "Enabled antiarrest", 2);
         while States.AntiArrest do
 	    for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
 		v:Disable()
 	    end
---Autorespawn when arrested (Finally got it working after 23923 attempts and shifted again because i originally put it on --// init: but it interferes with the gui)
-workspace.Remote.arrestPlayer.OnClientEvent:Connect(function()
-        print("debug_player is arrested")
-	task.wait(6)
-        print("debug_player is arrested done")
-        SaveCameraPos()
-        diedpos = char:WaitForChild("HumanoidRootPart").CFrame
-end)
+            if player.TeamColor == BrickColor.new("Really red") then
+            oldTeamIsCriminals = true
+            end
+            if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied then
+            SaveCameraPos()
+            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+            end
             task.wait(.1)
         end
-    end;
-    if CMD("unantiarrest") then
-        States.AntiArrest = false
-        Notify("Success", " Disabled antiarrest", 2);
+        else
+        Notify("Success", "Disabled antiarrest", 2);
+        end
     end;
     if CMD("pinata") or CMD("freeloot") or CMD("loot") then
         Pinata = true
@@ -2736,11 +2760,15 @@ end
         SavePos();
         if not Args[4] then
             if Args[2] == "inmates" or Args[2] == "i" then
+                isChangingTeamToInmates = true
                 SaveCameraPos()
                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
                 TeamEvent("Bright orange");
+                repeat task.wait() until player.TeamColor == BrickColor.new("Bright orange")
                 Notify("Success", "Changed team to Inmates.", 2);
                 LoadCameraPos()
+                task.wait(.2)
+                isChangingTeamToInmates = false
             elseif Args[2] == "guards" or Args[2] == "g" then
                 SaveCameraPos()
                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
