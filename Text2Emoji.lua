@@ -5,7 +5,6 @@ local LocalPlayer = Players.LocalPlayer
 
 local AddEmojis = function(Message)
 	local Emojis = {
---I used a unicode website and PAINFULLY typed these manually
 [":grinning:"] = "😀",
 [":smiley:"] = "😃",
 [":smile:"] = "😄",
@@ -82,6 +81,7 @@ local AddEmojis = function(Message)
 [":frowning:"] = "😦",
 [":anguished:"] = "😧",
 [":fearful:"] = "😨",
+[":scream:"] = "😱",
 [":anxious_face_with_sweat:"] = "😰",
 [":sad_but_relieved_face:"] = "😥",
 [":crying_face:"] = "😢",
