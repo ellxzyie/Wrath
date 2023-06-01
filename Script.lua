@@ -71,7 +71,10 @@ end)
 buttonC.MouseButton1Click:Connect(function()
     game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
 end)
-print("User is on mobile, loading the Mobile GUI quick access")
+print("User is on mobile, loading Mobile GUI")
+else
+print("User is on PC, loading Text2Emoji Converter")
+loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Text2Emoji.lua'))()
 end
 local ExecutionTime = tick();
 
@@ -1161,9 +1164,11 @@ local function characterAdded()
         end
         if not game.Players.LocalPlayer.Character:FindFirstChild("ForceField") then
             isTeleportingToOldPosAndHasNoForceField = true
+            repeat
             task.wait(.01)
             SaveCameraPos()
             char:WaitForChild("HumanoidRootPart").CFrame = diedpos
+            until char.HumanoidRootPart.CFrame == diedpos
             LoadCameraPos()
             isTeleportingToOldPosAndHasNoForceField = false
         end
@@ -14111,7 +14116,7 @@ end);
 
 --// Loopkills:
 task.spawn(function()
-    while task.wait(1/5) do
+    while task.wait() do
         if next(Loopkilling) then
             local LKPlayers = {};
             for i,v in next, Loopkilling do
@@ -14151,7 +14156,7 @@ end);
 
 --// Melee Kills:
 task.spawn(function()
-    while task.wait(0.03) do
+    while task.wait() do
         if next(MeleeKilling) then
             local DoSavePos = false;
             SavePos();
@@ -14468,7 +14473,7 @@ end);
 
 --// Team kill:
 task.spawn(function()
-    while task.wait(0.75) do
+    while task.wait() do
         if States.KillAll then
             KillPlayers(Players);
         end;
