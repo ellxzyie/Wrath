@@ -1,3 +1,13 @@
+--Send notification
+local StarterGui = game:GetService("StarterGui")
+local notificationProperties = {
+    Title = "Text2Emoji Converter Loaded",
+    Text = "Type :list: for list of emoji",
+    Icon = "",
+    Duration = 5
+}
+StarterGui:SetCore("SendNotification", notificationProperties)
+--The script
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -105,8 +115,8 @@ local AddEmojis = function(Message)
 [":skull_and_crossbones:"] = "☠️",
 [":hankey:"] = "💩",
 [":clown_face:"] = "🤡",
-[":japanese_ogre:"] = "👹",
-[":japanese_goblin:"] = "👺",
+[":ogre:"] = "👹",
+[":goblin:"] = "👺",
 [":ghost:"] = "👻",
 [":alien:"] = "👽",
 [":space_invader:"] = "👾",
@@ -1891,6 +1901,282 @@ end
 
 local IsFired = false
 
+local ExecuteList = function()
+-- Gui to Lua
+-- Version: 3.2
+
+-- Instances:
+
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local TextButton = Instance.new("TextButton")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local TextBox = Instance.new("TextBox")
+
+--Properties:
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Frame.Parent = ScreenGui
+Frame.Active = true
+Frame.BackgroundColor3 = Color3.fromRGB(204, 204, 204)
+Frame.Position = UDim2.new(0.399686337, 0, 0.190420538, 0)
+Frame.Selectable = true
+Frame.Size = UDim2.new(0, 273, 0, 322)
+
+TextButton.Parent = Frame
+TextButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+TextButton.Position = UDim2.new(0.849816859, 0, 0.0186335407, 0)
+TextButton.Size = UDim2.new(0, 39, 0, 36)
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "X"
+TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.TextSize = 14.000
+
+ScrollingFrame.Parent = Frame
+ScrollingFrame.Active = true
+ScrollingFrame.BackgroundColor3 = Color3.fromRGB(204, 204, 204)
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.Position = UDim2.new(0.00366300368, 0, 0.149068326, 0)
+ScrollingFrame.Size = UDim2.new(0, 272, 0, 274)
+
+TextBox.Parent = Frame
+TextBox.BackgroundColor3 = Color3.fromRGB(244, 244, 244)
+TextBox.Position = UDim2.new(0.0366300382, 0, 0.0186335407, 0)
+TextBox.Size = UDim2.new(0, 216, 0, 35)
+TextBox.Font = Enum.Font.SourceSans
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextBox.TextSize = 14.000
+
+-- Scripts:
+
+local function RNFDLJY_fake_script() -- TextButton.LocalScript 
+	local script = Instance.new('LocalScript', TextButton)
+
+	local frame = script.Parent.Parent 
+	
+	local function deleteGUI()
+		frame.Parent:Destroy() 
+	end
+	
+	script.Parent.MouseButton1Click:Connect(deleteGUI)
+	
+end
+coroutine.wrap(RNFDLJY_fake_script)()
+local function UKKAO_fake_script() -- ScrollingFrame.LocalScript 
+	local script = Instance.new('LocalScript', ScrollingFrame)
+
+	local function createTextLabels(scrollingFrame, texts)
+		local contentHeight = 0
+		for index, text in ipairs(texts) do
+			local textLabel = Instance.new("TextLabel")
+			textLabel.Name = "Label" .. index
+			textLabel.Parent = scrollingFrame
+			textLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			textLabel.Position = UDim2.new(0, 0, 0, contentHeight)
+			textLabel.Size = UDim2.new(1, 0, 0, 20)
+			textLabel.Font = Enum.Font.SourceSans
+			textLabel.Text = text
+			textLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+			textLabel.TextSize = 14.0
+	
+			contentHeight = contentHeight + textLabel.Size.Y.Offset
+		end
+		scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
+	end
+	
+	
+	local texts = {
+		":grinning: 😀",
+		":smiley: 😃",
+		":smile: 😄",
+		":grin: 😁",
+		":laughing: 😆",
+		":satisfied: 😆",
+		":sweat_smile: 😅",
+		":rofl: 🤣",
+		":joy: 😂",
+		":slightly_smiling_face: 🙂",
+		":upside_down_face: 🙃",
+		":wink: 😉",
+		":blush: 😊",
+		":innocent: 😇",
+		":smiling_face_with_three_hearts: 🥰",
+		":heart_eyes: 😍",
+		":star_struck: 🤩",
+		":kissing_heart: 😘",
+		":kissing: 😗",
+		":relaxed: ☺️",
+		":kissing_closed_eyes: 😚",
+		":kissing_smiling_eyes: 😙",
+		":yum: 😋",
+		":stuck_out_tongue: 😛",
+		":stuck_out_tongue_winking_eye: 😜",
+		":zany_face: 🤪",
+		":stuck_out_tongue_closed_eyes: 😝",
+		":money_mouth: 🤑",
+		":hugs: 🤗",
+		":hand_over_mouth: 🤭",
+		":shushing_face: 🤫",
+		":thinking: 🤔",
+		":zipper_mouth_face: 🤐",
+		":raised_eyebrow: 🤨",
+		":neutral_face: 😐",
+		":expressionless: 😑",
+		":no_mouth: 😶",
+		":smirk: 😏",
+		":unamused: 😒",
+		":roll_eyes: 🙄",
+		":grimacing: 😬",
+		":lying_face: 🤥",
+		":relieved: 😌",
+		":pensive: 😔",
+		":sleepy: 😪",
+		":drooling_face: 🤤",
+		":sleeping: 😴",
+		":mask: 😷",
+		":face_with_thermometer: 🤒",
+		":face_with_head_bandage: 🤕",
+		":nauseated_face: 🤢",
+		":vomiting_face: 🤮",
+		":sneezing_face: 🤧",
+		":hot_face: 🥵",
+		":cold_face: 🥶",
+		":woozy_face: 🥴",
+		":dizzy_face: 😵",
+		":exploding_head: 🤯",
+		":cowboy_hat_face: 🤠",
+		":partying_face: 🥳",
+		":disguised_face: 🥸",
+		":sunglasses: 😎",
+		":nerd_face: 🤓",
+		":monocle_face: 🧐",
+		":confused: 😕",
+		":worried: 😟",
+		":slightly_frowning_face: 🙁",
+		":frowning_face: ☹️",
+		":open_mouth: 😮",
+		":hushed: 😯",
+		":astonished: 😲",
+		":flushed: 😳",
+		":pleading_face: 🥺",
+		":frowning: 😦",
+		":anguished: 😧",
+		":fearful: 😨",
+		":scream: 😱",
+		":anxious_face_with_sweat: 😰",
+		":sad_but_relieved_face: 😥",
+		":crying_face: 😢",
+		":loudly_crying_face: 😭",
+		":sob: 😭",
+		":confounded: 😖",
+		":persevere: 😣",
+		":disappointed_relieved: 😥",
+		":cry: 😢",
+		":sweat: 😓",
+		":weary: 😩",
+		":tired_face: 😫",
+		":yawning_face: 🥱",
+		":triumph: 😤",
+		":angry: 😠",
+		":rage: 😡",
+		":cursing_face: 🤬",
+		":smiling_imp: 😈",
+		":imp: 👿",
+		":skull: 💀",
+		":skull_and_crossbones: ☠️",
+		":hankey: 💩",
+		":clown_face: 🤡",
+		":ogre: 👹",
+		":goblin: 👺",
+		":ghost: 👻",
+		":alien: 👽",
+		":space_invader: 👾",
+		":robot: 🤖",
+		":smiley_cat: 😺",
+		":smile_cat: 😸",
+		":joy_cat: 😹",
+		":heart_eyes_cat: 😻",
+		":smirk_cat: 😼",
+		":kissing_cat: 😽",
+		":scream_cat: 🙀",
+		":crying_cat_face: 😿",
+		":pouting_cat: 😾",
+		":palms_up: 🤲",
+		":raised_hands: 🙌",
+		":clap: 👏",
+		":wave: 👋",
+		":call_me_hand: 🤙",
+		":thumbsup: 👍",
+		":thumbsdown: 👎",
+		":punch: 👊",
+		":fist: ✊",
+		":left_facing_fist: 🤛",
+		":right_facing_fist: 🤜",
+		":fingers_crossed: 🤞",
+		":v: ✌️",
+		":ok_hand: 👌",
+		":pinching_hand: 🤏",
+		":vulcan_salute: 🖖",
+		":middle_finger: 🖕",
+		":metal: 🤘",
+		":crossed_fingers: 🤞",
+		":spock-hand: 🖖",
+		":writing_hand: ✍️",
+		":hand_with_index_and_middle_finger_crossed: 🤞",
+		":hand_with_index_and_thumb_crossed: 🤞",
+		":raised_hand_with_fingers_splayed: 🖐️",
+		":peace_sign: ✌️",
+		":point_left: 👈",
+		":point_right: 👉",
+		":point_up: ☝️",
+		":point_down: 👇",
+		":point_up_2: 👆",
+		":point_up_2_tone: 👆🏻",
+		":point_up_small: 👆",
+		"Too lazy to add more so these are just all commonly used emojis",
+	}
+	createTextLabels(ScrollingFrame, texts)
+end
+coroutine.wrap(UKKAO_fake_script)()
+local function EHMLEGO_fake_script() -- TextBox.LocalScript 
+	local script = Instance.new('LocalScript', TextBox)
+
+	local TextBox = script.Parent
+	local ScrollingFrame = script.Parent.Parent.ScrollingFrame
+	
+	local function filterItems(searchTerm)
+		searchTerm = string.lower(searchTerm) 
+		for _, item in ipairs(ScrollingFrame:GetChildren()) do
+			if item:IsA("TextLabel") then 
+				local itemName = string.lower(item.Text)
+	
+				if string.find(itemName, searchTerm) then
+					item.Visible = true
+				else
+					item.Visible = false
+				end
+			end
+		end
+	end
+	
+	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+		local searchTerm = TextBox.Text
+		filterItems(searchTerm)
+	end)
+	
+end
+coroutine.wrap(EHMLEGO_fake_script)()
+local function UOKZWQK_fake_script() -- Frame.LocalScript 
+	local script = Instance.new('LocalScript', Frame)
+
+	script.Parent.Draggable = true
+end
+coroutine.wrap(UOKZWQK_fake_script)()
+end
+
 local oldmeta
 oldmeta = hookmetamethod(game, "__namecall", function(self, ...)
 	local arg = {...}
@@ -1909,7 +2195,11 @@ oldmeta = hookmetamethod(game, "__namecall", function(self, ...)
 		if not ToSend then
 			ToSend = AddEmojis(Message)
 		end
-		SendMessage(ToSend, "All")
+		if string.lower(Message) == ":list:" then
+			ExecuteList()
+		else
+			SendMessage(ToSend, "All")
+		end
 		IsFired = false
 		return nil
 	end
