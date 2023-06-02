@@ -1180,9 +1180,9 @@ diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
 player.CharacterAdded:Connect(characterAdded)
 -------------------------------------------------------------------------------------------------------------------------------------------------
 function Kill(PLAYERS)
-    local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
+    local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
     if not hasAK47 then
-        local mysavedpos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
@@ -1682,9 +1682,9 @@ function GetPlayer(STRING, PLAYER)
 end;
 
 function KillPlayers(TEAM, Whitelist)
-    local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
+    local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
     if not hasAK47 then
-        local mysavedpos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
         Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
@@ -14123,7 +14123,7 @@ task.spawn(function()
                 if v.Character then
                     local Humanoid = v.Character:FindFirstChild("Humanoid");
                     local ForceField = v.Character:FindFirstChild("ForceField");
-                    if Humanoid and Humanoid.Health > 0 and not ForceField then
+                    if Humanoid and Humanoid.Health > 0 and not ForceField and game.Players.LocalPlayer.Backpack then
                         LKPlayers[#LKPlayers+1] = v;
                     end;
                 end;
@@ -14474,19 +14474,19 @@ end);
 --// Team kill:
 task.spawn(function()
     while task.wait() do
-        if States.KillAll then
+        if States.KillAll and game.Players.LocalPlayer.Backpack then
             KillPlayers(Players);
         end;
-        if States.KillInmates then
+        if States.KillInmates and game.Players.LocalPlayer.Backpack then
             KillPlayers(Teams.Inmates);
         end;
-        if States.KillGuards then
+        if States.KillGuards and game.Players.LocalPlayer.Backpack then
             KillPlayers(Teams.Guards);
         end;
-        if States.KillCriminals then
+        if States.KillCriminals and game.Players.LocalPlayer.Backpack then
             KillPlayers(Teams.Criminals);
         end;
-        if States.TaseAll then
+        if States.TaseAll and game.Players.LocalPlayer.Backpack then
             Tase(Players:GetPlayers());
         end;
     end;
