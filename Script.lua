@@ -1165,7 +1165,7 @@ local function characterAdded()
         if not game.Players.LocalPlayer.Character:FindFirstChild("ForceField") then
             isTeleportingToOldPosAndHasNoForceField = true
             repeat
-            task.wait(.01)
+            task.wait(.1)
             SaveCameraPos()
             char:WaitForChild("HumanoidRootPart").CFrame = diedpos
             until char.HumanoidRootPart.CFrame == diedpos
@@ -1211,7 +1211,7 @@ function Kill(PLAYERS)
                     object.CFrame = newPosition
                     print("Moved crimpad")
                 elseif LocalPlayer.TeamColor == BrickColor.new("Really red") then
-                        if v.Character and v.TeamColor == BrickColor.new("Really red") and not v.Character:FindFirstChild("ForceField") and v.Character.Humanoid.Health > 0 then
+                        if v.Character and v.TeamColor == BrickColor.new("Really red") and not v.Character:FindFirstChild("ForceField") and v.Character:WaitForChild("Humanoid").Health > 0 then
                             States.FriendlyFire = true
                             print("Changed Friendlyfire to true to kill criminals")
         if States.FriendlyFire then
@@ -1714,7 +1714,7 @@ local newPosition = CFrame.new(Vector3.new(10, 100, 10))
 object.CFrame = newPosition
 print("Moved crimpad")
                     elseif LocalPlayer.TeamColor == BrickColor.new("Really red") then
-                        if PLR.Character and PLR.TeamColor == BrickColor.new("Really red") and not PLR.Character:FindFirstChild("ForceField") and PLR.Character.Humanoid.Health > 0 then
+                        if PLR.Character and PLR.TeamColor == BrickColor.new("Really red") and not PLR.Character:FindFirstChild("ForceField") and PLR.Character:WaitForChild("Humanoid").Health > 0 then
                             States.FriendlyFire = true
                             print("Changed Friendlyfire to true to kill criminals")
         if States.FriendlyFire then
@@ -14116,7 +14116,7 @@ end);
 
 --// Loopkills:
 task.spawn(function()
-    while task.wait() do
+    while task.wait(.20) do
         if next(Loopkilling) then
             local LKPlayers = {};
             for i,v in next, Loopkilling do
@@ -14473,7 +14473,7 @@ end);
 
 --// Team kill:
 task.spawn(function()
-    while task.wait() do
+    while task.wait(.3) do
         if States.KillAll and game.Players.LocalPlayer.Backpack then
             KillPlayers(Players);
         end;
