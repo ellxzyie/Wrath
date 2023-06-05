@@ -1,81 +1,3 @@
---Autorespawn check
-if game.Players.LocalPlayer.Character.Humanoid.Health == 0 then
-    local player = game.Players.LocalPlayer
-    if player.TeamColor == BrickColor.new("Really red") then
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-        workspace.Remote.TeamEvent:FireServer("Bright blue")
-        local crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        workspace['Criminals Spawn'].SpawnLocation.CFrame = crimspawnpoint
-    elseif player.TeamColor == BrickColor.new("Bright blue") then
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-        workspace.Remote.TeamEvent:FireServer("Bright blue")
-    else
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-    end
-end
-wait(0.4)
---Mobile GUI check
-local isMobile = game:GetService("UserInputService").TouchEnabled
-if isMobile then
-local gui = Instance.new("ScreenGui")
-gui.Name = "MovableGUI"
-gui.Parent = game.Players.LocalPlayer.PlayerGui
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 50, 0, 50)
-frame.Position = UDim2.new(0, 10, 0.5, -25)
-frame.BackgroundTransparency = 0.5
-frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-frame.Draggable = true
-frame.Parent = gui
-
-local buttonH = Instance.new("TextButton")
-buttonH.Size = UDim2.new(0, 40, 0, 20)
-buttonH.Position = UDim2.new(0, 5, 0, 5)
-buttonH.Text = "H"
-buttonH.Parent = frame
-
-local buttonF = Instance.new("TextButton")
-buttonF.Size = UDim2.new(0, 40, 0, 20)
-buttonF.Position = UDim2.new(0, 5, 0, 30)
-buttonF.Text = "F"
-buttonF.Parent = frame
-
-local buttonC = Instance.new("TextButton")
-buttonC.Size = UDim2.new(0, 40, 0, 20)
-buttonC.Position = UDim2.new(0, 5, 0, 55)
-buttonC.Text = "C"
-buttonC.Parent = frame
-
-local screenSize = game:GetService("GuiService"):GetScreenResolution()
-local isMobile = game:GetService("UserInputService").TouchEnabled
-
-if isMobile then
-    frame.Position = UDim2.new(1, -60, 0, 10) 
-else
-    local guiWidth = frame.Size.X.Offset
-    local guiHeight = frame.Size.Y.Offset
-    local margin = 10 
-
-    frame.Position = UDim2.new(0, screenSize.X - guiWidth - margin, 0.5, -guiHeight / 2)
-end
-
-buttonH.MouseButton1Click:Connect(function()
-    game:GetService("VirtualInputManager"):SendKeyEvent(true, "H", false, game)
-end)
-
-buttonF.MouseButton1Click:Connect(function()
-    game:GetService("VirtualInputManager"):SendKeyEvent(true, "F", false, game)
-end)
-
-buttonC.MouseButton1Click:Connect(function()
-    game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
-end)
-print("User is on mobile, loading Mobile GUI")
-else
-print("User is on PC, loading Text2Emoji Converter")
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Text2Emoji.lua'))()
-end
 local ExecutionTime = tick();
 
 ------- MAIN SCRIPT -------
@@ -116,6 +38,7 @@ local RegionModule = require(game.ReplicatedStorage["Modules_client"]["RegionMod
 local TooltipModule = require(game.ReplicatedStorage.Modules_client.TooltipModule);
 local LocalPlayer = Players.LocalPlayer;
 local Mouse = LocalPlayer:GetMouse();
+local isMobile = game:GetService("UserInputService").TouchEnabled
 
 local Settings = {Prefix = ".", ToggleGui = "RightControl"};
 local ProtectedSettings = {tpcmds = true, killcmds = true, arrestcmds = true, givecmds = true, othercmds = true};
@@ -267,7 +190,147 @@ local Commands = {
     "TIP: -- press 'H' to open the command bar.";
     "The default prefix is '.' ";
     "output -- shows the output";
-    "freeloot / pinata / loot -- Makes you poop out free loot .unloot/.unfreeloot/.unpinata to stop";
+    "=== KILL COMMANDS ===";
+    "kill [plr] / kill guards, inmates, criminals -- kills a player, team, or all";
+    "mkill [plr] -- melee kill player or all";
+    "lk [plr,all,inmates,guards,criminals] -- loopkills plr/team/all";
+    "unlk [plr,all,inmates,guards,criminals] -- stops loopkill";
+    "mlk [plr,all] -- melee loopkil plr/all";
+    "unmlk [plr,all] -- unmelee loopkill plr/all";
+    "nuke / kamikaze [plr] -- turns plr into a nuke";
+    "defuse / unnuke [plr] -- removes nuke from plr";
+    "aura / ka [plr] -- kill aura plr or all";
+    "unka / unaura [plr] -- removes kill aura from player or all";
+    "virus / infect [plr] -- gives virus to a player (touch kill)";
+    "rvirus / unvirus [plr] -- remove virus from player";
+    "sp / spampunch -- toggles spam punch (your punches will be really fast if you hold down F)";
+    "pa / punchaura -- toggles punch aura (your punches have more range)";
+    "op / onepunch [plr] -- toggles one punch (your punches will insta kill)";
+    "os / oneshot [plr] -- toggles one shot for plr";
+    "shootback / sb [plr] -- shoot back plr (when they get shot the person who shot them dies)";
+    "clk / clearloopkills -- clears loopkill tables (EVERY LOOPKILL INCLUDING TEAMKILLS)";
+    "clv -- clear virus";
+    "clka -- clear kill auras";
+    "clt -- clear loop tase";
+    "clos -- clear one shots";
+    "clsb / clearshootback -- clears shoot back";
+    "cltb / cleartaseback -- clears tase back";
+    "getlk / getloopkills -- gets all players who are being loopkilled";
+    "getv / getinfected -- gets all currently infected players";
+    "getk / getkillauras -- gets all players that have a kill aura";
+    "getlt / getlooptase -- gets all players that are being loop tased";
+    "getmlk / getmeleeloopkill -- gets all players that are being melee loop killed";
+    "=== ARREST/TAZE COMMANDS ===";
+    "sa [plr] -- spam arrest plr";
+    "unsa / breaksa -- breaks spam arrest";
+    "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
+    "aa / arrestaura -- arrest aura";
+    "lt [plr,all] -- loop tase plr or all";
+    "unlt [plr,all] -- stops loop tase plr or all";
+    "tase [plr,all] -- tase a player or all";
+    "ta / taseaura [plr] -- gives plr tase aura";
+    "=== GUN COMMANDS ===";
+    "aguns -- auto give gun";
+    "unaguns -- stop auto give gun";
+    "gun / guns -- gives guns (one time)";
+    "af / autofire -- disables semi auto guns (m9) || taser isn't affected :(";
+    "aaf / autoaf -- automatically enables autofire every time you respawn";
+    "ia / infammo -- emables infinite ammo";
+    "aia / autoinfammo -- automatically enables infinite ammo every time you respawn";
+    "oneshot / os [plr] -- one shot gun";
+    "fastfire / firerate -- very fast fire rate ";
+    "autofirerate / affr -- autofastfirerate";
+    "=== COMMANDS FOR RANKED ===";
+    "givecmds / gcmds [plr,all] -- gives a player commands or all";
+    "revokecmds / rcmds [plr] -- revokes command access from player";
+    "getadmins -- gets all admins";
+    "cla / clearadmins -- clears all admins";
+    "asettings / as -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds] [true, cmd enabled / false, cmd disabled]";
+    "getas / getadminsettings -- gets all current configuration settings for ranked players";
+    "=== PROTECTION/WHITELIST COMMANDS ===";
+    "p / protect [plr] -- protects a player";
+    "up / unprotect [plr] -- revokes a player's protection";
+    "clp / clearprotected -- revokes every protected player";
+    "getp / getprotected -- view all protected";
+    "psettings / ps -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds/karma] [true, immune / false, not immune]";
+    "getps / getprotectedsettings -- gets all current configuration settings for protected players";
+    "=== MISC ===";
+    "viewgui -- Useless ViewGUI that views player (Maybe useful for detecting exploiter)";
+    "autospeed / aspeed [Number] -- autospeed even if you die";
+    "lpunch / loudpunch -- makes your punches loud";
+    "fly -- .unfly to disable (Obviously) Mobile compatible (Using GUI)";
+    "antiarrest -- Prevents you from being arrested and spawns you back to old position";
+    "hipheight / height [Number] -- Changes your hipheight or makes you float";
+    "speed / walkspeed [Number] -- Changes walkspeed";
+    "forcefield / ff -- forcefield, obviously";
+    "loopopendoors / loopdoors -- Loops open every doors";
+    "antipunish / autoguard -- prevents you from being punished as guards";
+    "keycard / key / card -- Pickup or obtain keycard";
+    "carspawn / car -- spawns a car";
+    "noclip -- allows you to walk through walls";
+    "clip -- disables noclip";
+    "ff / forcefield -- enables forcefield";
+    "unff / unforcefield -- disables forcefield";
+    "opendoors / opensesame / doorsopen -- opens all doors, obviously";
+    "copyteam [plr] -- copies a plr's team [use again to disable]";
+    "=== FLING ===";
+    "fling [plr] -- Flings player (lowest fling)";
+    "unfling -- break fling";
+    "sfling [plr] -- Super flings player";
+    "unsfling -- break sfling";
+    "bfling [plr] -- Body flings player (For Godded players, NET bypass doesn't count!)";
+    "unbfling -- breaks bfling";
+    "getflings / getf -- gets invisible flingers";
+    "=== OTHER ===";
+    "getinvis / getinv -- get invisible players";
+    "geta / getarmorspammers -- (gets armor spammers)";
+    "fps / antilag / boost -- Make game FPS faster (Depends on your computer on how much faster it'll be, but nonetheless it will work!)";
+    "crim / cr [plr] -- turns plr into criminal";
+    "team / t [color / guards / inmates / criminals / rgb] -- change team";
+    "rgb -- turns rainbow team on";
+    "unrgb -- turns rainbow team off";
+    "rejoin / rj -- makes you rejoin the server";
+    "auto -- toggle auto respawn";
+    "view [plr] -- view plr";
+    "unview -- unview plr";
+    "getteam [plr] -- gets the players team";
+    "annoy [plr] -- repeatedly walks up to the player and punches them";
+    "unannoy -- stops annoying the plr";
+    "logspam / ls -- spams logs";
+    "unlogspam / unls -- stops log spam";
+    "meleeaura / ma -- melee aura";
+    "prefix [new prefix] -- changes chat prefix to new prefix";
+    "clogs / combatlogs -- toggles combat logs (NOT ACCURATE AGAINST EXPLOITERS / YOU NEED TO DISABLE ANTICRASH TO USE THIS)";
+    "getd / getdef -- gets all defense states";
+    "getstates / gets -- gets current states";
+    "btools -- gives you clientsided btools";
+    "hop -- server hop";
+    "ct / copyteam [plr] -- copy team of plr";
+    "gs / gunspin -- guns will spin around you";
+    "sarmor / spamarmor [strength] -- armor spam";
+    "unsarmor / unspamarmor -- stops armor spam";
+    "=== DEFENSE ===";
+    "ac / anticrim -- stops you from becoming criminal";
+    "ab / antibring -- stops you from being bring (deletes tools)";
+    "afling / antifling -- stops you from being flung";
+    "ap / antipunch -- kills players that punch you";
+    "anticrash / acrash -- disables bullet replication / makes you immune to crash scripts (disables/enables .clogs, .sb, .tb, .ctp, .os) || disabled by default";
+    "def / defenses -- enables all defenses";
+    "undef / undefenses -- disables all defenses";
+    "=== LAG/CRASH COMMANDS ===";
+    "rip / crash -- completely shits on the server";
+    "sc / softcrash -- freezes everyone's screen but keeps the server alive, best way to empty servers";
+    "lag [strength] -- lags server with strength indefinitely";
+    "unlag -- stops lag";
+    "timeout -- kills server, doesnt freeze people's screens";
+    "tcrash / tscrash / tspamcrash -- Crashes all players using TeamEvent spam (Low ping only)";
+    "tscrash2 / tcrash2 / tspamcrash2 -- 1000000 Team Event spam (Might crash you)";
+    "=== MAP ===";
+    "nodoors -- removes doors";
+    "doors / redoors -- restores doors";
+    "walls -- restores wall";
+    "nowalls -- removes walls";
+    "=== BRING/TELEPORT COMMANDS ===";
     "goto / to [plr] -- teleports you to plr";
     "bring [plr] -- teleports plr to you [Patched]";
     "lb / loopbring [plr,all] -- loop brings plr/all to you";
@@ -323,176 +386,12 @@ local Commands = {
     "dwp / delwaypoint [name] -- remove spawnpoint";
     "getwpnames / getwaypointnames -- gets waypoint names";
     "clwp -- clears waypoints";
-    "antiarrest -- Prevents you from being arrested and spawns you back to old position";
-    "kill [plr] / kill guards, inmates, criminals -- kills a player, team, or all";
-    "mkill [plr] -- melee kill player or all";
-    "vkill [plr] -- void kill player (kills them by sending them to the void)";
-    "nuke / kamikaze [plr] -- turns plr into a nuke";
-    "defuse / unnuke [plr] -- removes nuke from plr";
-    "tase [plr,all] -- tase a player or all";
-    "lk [plr,all,inmates,guards,criminals] -- loopkills plr/team/all";
-    "unlk [plr,all,inmates,guards,criminals] -- stops loopkill";
-    "mlk [plr,all] -- melee loopkil plr/all";
-    "unmlk [plr,all] -- unmelee loopkill plr/all";
-    "slk [plr,team,all] -- speed loopkill plr/team/all";
-    "unslk [plr,team,all] -- stop speed loopkill plr/team/all";
-    "clk / clearloopkills -- clears loopkill tables (EVERY LOOPKILL INCLUDING TEAMKILLS)";
-    "getlk / getloopkills -- gets all players who are being loopkilled";
-    "aura / ka [plr] -- kill aura plr or all";
-    "unka / unaura [plr] -- removes kill aura from player or all";
-    "virus / infect [plr] -- gives virus to a player (touch kill)";
-    "rvirus / unvirus [plr]";
-    "ta / taseaura [plr] -- gives plr tase aura";
-    "getv / getinfected -- gets all currently infected players";
-    "getk / getkillauras -- gets all players that have a kill aura";
-    "getlt / getlooptase -- gets all players that are being loop tased";
-    "getmlk / getmeleeloopkill -- gets all players that are being melee loop killed";
-    "lt [plr,all] -- loop tase plr or all";
-    "unlt [plr,all] -- stops loop tase plr or all";
-    "sp / spampunch -- toggles spam punch (your punches will be really fast if you hold down F)";
-    "pa / punchaura -- toggles punch aura (your punches have more range)";
-    "op / onepunch [plr] -- toggles one punch (your punches will insta kill)";
-    "os / oneshot [plr] -- toggles one shot for plr";
-    "shootback / sb [plr] -- shoot back plr (when they get shot the person who shot them dies)";
-    "tb / taseback [plr] -- tase back plr (when they get shot the person who shot them gets tased)";
-    "clv -- clear virus";
-    "clka -- clear kill auras";
-    "clt -- clear loop tase";
-    "clos -- clear one shots";
-    "clsb / clearshootback -- clears shoot back";
-    "cltb / cleartaseback -- clears tase back";
-    "atc / autoteamchange -- toggles auto team change (placeholder command a.k.a i am too lazy to add code)";
+    --"vkill [plr] -- void kill player (kills them by sending them to the void)";
     "shock / fence [plr] -- kills player with fence ";
     "fridge [plr] -- teleports player to the fidge ";
-    "tcrash / tscrash / tspamcrash -- Crashes all players using TeamEvent spam (Only crashes potato devices and times you out)";
     "armor -- gives armor (requires riot gamepass | only works on you)";
-    "hipheight / height [Number] -- Changes your hipheight or makes you float";
-    "speed / walkspeed [Number] -- Changes walkspeed";
-    "forcefield / ff -- forcefield, obviously";
-    "loopopendoors / loopdoors -- Loops open every doors";
-    "antipunish / autoguard -- prevents you from being punished as guards";
-    "fastfire / firerate -- very fast fire rate ";
-    "givecmds / gcmd [plr,all] -- gives commands to a player";
-    "revokecmds / rcmds [plr,all] -- revokes cmds from player";
-    "keycard / key / card -- Pickup or obtain keycard";
-    "carspawn / car -- spawns a car";
-    "opendoors / opensesame / opensaysme / doorsopen -- opens all doors, obviously";
-    "=== GUN COMMANDS ===";
-    "aguns -- auto give gun";
-    "unaguns -- stop auto give gun";
-    "gun / guns -- gives guns (one time)";
-    "af / autofire -- disables semi auto guns (m9) || taser isn't affected :(";
-    "aaf / autoaf -- automatically enables autofire every time you respawn";
-    "ia / infammo -- emables infinite ammo";
-    "aia / autoinfammo -- automatically enables infinite ammo every time you respawn";
-    "ffire / friendlyfire -- toggles friendly fire on/off";
-    "oneshot / os [plr] -- one shot gun";
-    "kcf -- auto gives keycard";
-    "unkcf -- turns kcf off";
     "rb -- rainbow bullets";
-	"unrb -- turns off rainbow bullets";
-    "fly -- .unfly to disable (Obviously) Mobile compatible (Using GUI)";
-    "sa [plr] -- spam arrest plr";
-    "unsa / breaksa -- breaks spam arrest";
-    "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
-    "aa / arrestaura -- arrest aura";
-    "csa / crashsa -- short put powerful spam arrest";
-    "=== OTHER ===";
-    "getinvis / getinv -- get invisible players";
-    "geta / getarmorspammers -- (gets armor spammers)";
-    "fps / antilag / boost -- Make game FPS faster (Depends on your computer on how much faster it'll be, but nonetheless it will work!)";
-    "crim / cr [plr] -- turns plr into criminal";
-    "team / t [color / guards / inmates / criminals / rgb] -- change team";
-    "rgb -- turns rainbow team on";
-    "unrgb -- turns rainbow team off";
-    "rejoin / rj -- makes you rejoin the server";
-    "auto -- toggle auto respawn";
-    "view [plr] -- view plr";
-    "unview -- unview plr";
-    "getteam [plr] -- gets the players team";
-    "annoy [plr] -- repeatedly walks up to the player and punches them";
-    "unannoy -- stops annoying the plr";
-    "logspam / ls -- spams logs";
-    "unlogspam / unls -- stops log spam";
-    "meleeaura / ma -- melee aura";
-    "prefix [new prefix] -- changes chat prefix to new prefix";
-    "autospeed / aspeed [Number] -- autospeed even if you die";
-    "god -- you cant die";
-    "ungod -- disables god";
-    "clogs / combatlogs -- toggles combat logs (NOT ACCURATE AGAINST EXPLOITERS / YOU NEED TO DISABLE ANTICRASH TO USE THIS)";
-    "getd / getdef -- gets all defense states";
-    "getstates / gets -- gets current states";
-    "btools -- gives you btools";
-    "noclip -- allows you to walk through walls";
-    "clip -- disables noclip";
-    "ff / forcefield -- enables forcefield";
-    "unff / unforcefield -- disables forcefield";
-    "ctp / clicktp -- clicktp plr";
-    "clctp -- clears click teleports";
-    "hop -- server hop";
-    "ct / copyteam [plr] -- copy team of plr";
-    "gs / gunspin -- guns will spin around you";
-    "sarmor / spamarmor [strength] -- armor spam";
-    "unsarmor / unspamarmor -- stops armor spam";
-    "lpunch / loudpunch -- makes your punches loud";
-    "=== FLING ===";
-    "fling [plr] -- Flings player (lowest fling)";
-    "unfling -- break fling";
-    "sfling [plr] -- Super flings player";
-    "unsfling -- break sfling";
-    "bfling [plr] -- Body flings player (For Godded players, NET bypass doesn't count!)";
-    "unbfling -- breaks bfling";
-    "getflings / getf -- gets invisible flingers";
-    "=== COLOR TEAMS ===";
-    "caucasian / white -- white";
-    "blood / red -- red";
-    "africa / black -- black";
-    "blue";
-    "raid";
-    "pink";
-    "lime -- green";
-    "toothpaste -- cyan";
-    "yellow";
-    "gold";
-    "grey";
-    "pink / dis";
-    "mid / lime -- Lime Green";
-    "mint / shottyt";
-    "poop -- brown";
-    "copyteam [plr] -- copies a plr's team [use again to disable]";
-    "=== DEFENSE ===";
-    "ac / anticrim -- stops you from becoming criminal";
-    "ab / antibring -- stops you from being bring (deletes tools)";
-    "afling / antifling -- stops you from being flung";
-    "ap / antipunch -- kills players that punch you";
-    "anticrash / acrash -- disables bullet replication / makes you immune to crash scripts (disables/enables .clogs, .sb, .tb, .ctp, .os) || disabled by default";
-    "def / defenses -- enables all defenses";
-    "undef / undefenses -- disables all defenses";
-    "=== MAP ===";
-    "nodoors -- removes doors";
-    "doors / redoors -- restores doors";
-    "walls -- restores wall";
-    "nowalls -- removes walls";
-    "=== PROTECTION COMMANDS ===";
-    "p / protect [plr] -- protects a player";
-    "up / unprotect [plr] -- revokes a player's protection";
-    "clp / clearprotected -- revokes every protected player";
-    "getp / getprotected -- view all protected";
-    "psettings / ps -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds/karma] [true, immune / false, not immune]";
-    "getps / getprotectedsettings -- gets all current configuration settings for protected players";
-    "=== LAG COMMANDS ===";
-    "rip / crash -- completely shits on the server";
-    "sc / softcrash -- freezes everyone's screen but keeps the server alive, best way to empty servers";
-    "lag [strength] -- lags server with strength indefinitely";
-    "unlag -- stops lag";
-    "timeout -- kills server, doesnt freeze people's screens";
-    "=== COMMANDS FOR RANKED ===";
-    "admin [plr,all] -- admins a player or all";
-    "unadmin [plr] -- revokes admin access from player";
-    "getadmins -- gets all admins";
-    "cla / clearadmins -- clears all admins";
-    "asettings / as -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds] [true, cmd enabled / false, cmd disabled]";
-    "getas / getadminsettings -- gets all current configuration settings for ranked players";
+    "unrb -- turns off rainbow bullets";
     "=== GUI COMMANDS ===";
     "gui / guis -- toggle gui";
     "bindgui / guikeybind [keycode] (eg. 'G' or 'LeftAlt' or 'One') -- keybind for gui";
@@ -1076,6 +975,8 @@ local diedpos
 
 local function died()
     diedEvent:Disconnect()
+    SaveCameraPos()
+    diedpos = char:WaitForChild("HumanoidRootPart").CFrame
     hasAlreadyDied = true
     if player.TeamColor == BrickColor.new("Really red") then
         hasDiedasCriminals = true
@@ -1084,11 +985,9 @@ local function died()
 	else
 		workspace.Remote.TeamEvent:FireServer("Bright orange")
 	end
-        local crimspawnpoint
         repeat
         task.wait()
-	crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+        workspace["Criminals Spawn"].SpawnLocation.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
         until player.TeamColor == BrickColor.new("Really red")
     elseif player.TeamColor == BrickColor.new("Bright blue") then
     hasDiedasGuards = true
@@ -1102,23 +1001,19 @@ local function died()
     else
         workspace.Remote.TeamEvent:FireServer("Bright orange")
     end
-    diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
-    SaveCameraPos()
-    diedpos = char:WaitForChild("HumanoidRootPart").CFrame
-           
+    diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)          
 end
 
 local function characterAdded()
     if diedpos then
-        -------------------------------if player.TeamColor ~= BrickColor.new("Medium stone grey") then (PLACEHOLDER)
         char = player.Character or player.CharacterAdded:Wait()
         print("Autorespawning")
         char:WaitForChild("HumanoidRootPart").CFrame = diedpos
+        diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
         if States.NowFlying then
             endFly()
             startFly()
         end
-        diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
         LoadCameraPos()
         if not hasAlreadyDied and not isChangingTeamToInmates and player.TeamColor == BrickColor.new("Bright orange") and oldTeamIsCriminals and States.AntiArrest then
         local crimspawnpoint
@@ -1153,7 +1048,7 @@ local function characterAdded()
         hasExecutedGuns = false
         print("debug_hasExecutedGuns has been set to false")
         else
-          print("debug_hasExecutedGuns has already executed guns, so not executing again.")
+          --Placeholder
         end
         if hasDiedasCriminals then
         repeat task.wait() until player.TeamColor == BrickColor.new("Really red")
@@ -1172,13 +1067,16 @@ local function characterAdded()
             LoadCameraPos()
             isTeleportingToOldPosAndHasNoForceField = false
         end
-        -----------------------------------------end
     end
 end
 
 diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
 player.CharacterAdded:Connect(characterAdded)
--------------------------------------------------------------------------------------------------------------------------------------------------
+--Refresh
+function Refresh()
+died()
+end
+
 function Kill(PLAYERS)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
     if not hasAK47 then
@@ -2584,12 +2482,252 @@ spawn(autodestroyGUI)
         speed = tonumber(Args[2])
         Notify("Success", "Changed flyspeed to " .. tonumber(Args[2]) .. ".");
     end;
-    if CMD("tcrash") or CMD("tscrash") or CMD("tspamcrash") then
+    if CMD("tcrash2") or CMD("tscrash2") or CMD("tspamcrash2") then
 Notify("Success", "Your client might timeout or CRASH depending on how potato it is.");
 task.wait(1)
 for i = 1, 1000000 do
-    coroutine.wrap(TeamEvent)("Bright orange")
+    workspace.Remote.TeamEvent:FireServer("Bright orange")
 end
+    end;
+    if CMD("tscrash") or CMD("tcrash") or CMD("tspamcrash") then
+local RunService = game:GetService("RunService")
+RunService.Heartbeat:Connect(function()
+for i = 1, 484 do
+workspace.Remote.TeamEvent:FireServer("Bright orange")
+end
+    end)
+    end;
+    if CMD("viewgui") or CMD("vg") then
+    if isMobile then
+--ViewGUI_Mobile
+local UselessGUI = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local TextLabel = Instance.new("TextLabel")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local UIGridLayout = Instance.new("UIGridLayout")
+local CloseButton = Instance.new("TextButton")
+
+UselessGUI.Name = "UselessGUI"
+UselessGUI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+UselessGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Frame.Parent = UselessGUI
+Frame.Active = true
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.Position = UDim2.new(0.411699772, 0, 0.402610451, 0)
+Frame.Size = UDim2.new(0, 303, 0, 181)
+
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.BorderSizePixel = 0
+TextLabel.Position = UDim2.new(0.338002205, 0, 0, 0)
+TextLabel.Size = UDim2.new(0, 95, 0, 23)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "ViewGUI"
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.TextSize = 30.000
+
+ScrollingFrame.Parent = Frame
+ScrollingFrame.Active = true
+ScrollingFrame.BackgroundColor3 = Color3.fromRGB(122, 122, 122)
+ScrollingFrame.Position = UDim2.new(-0.00215999992, 0, 0.125461221, 0)
+ScrollingFrame.Size = UDim2.new(0, 303, 0, 158)
+ScrollingFrame.ScrollBarThickness = 6
+
+UIGridLayout.Parent = ScrollingFrame
+UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIGridLayout.CellSize = UDim2.new(0, 60, 0, 60)
+
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = Frame
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Position = UDim2.new(0.886961877, 0, 0.0110497242, 0)
+CloseButton.Size = UDim2.new(0, 31, 0, 20)
+CloseButton.Font = Enum.Font.SourceSans
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.TextSize = 20.000
+
+--Frame
+local script = Instance.new('LocalScript', Frame)
+
+
+script.Parent.Draggable = true
+--Scrolling frame
+local script = Instance.new('LocalScript', ScrollingFrame)
+
+local function populatePlayerList()
+	for _, button in ipairs(ScrollingFrame:GetChildren()) do
+		if button:IsA("TextButton") then
+			button:Destroy()
+		end
+	end
+
+
+	local players = game.Players:GetPlayers()
+
+
+	for _, player in ipairs(players) do
+		local button = Instance.new("TextButton")
+		button.Name = player.Name
+		button.Parent = ScrollingFrame
+		button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		button.Size = UDim2.new(1, 0, 0, 60)
+		button.Font = Enum.Font.SourceSans
+		button.Text = player.DisplayName
+		button.TextColor3 = Color3.fromRGB(0, 0, 0)
+		button.TextSize = 16
+		button.TextScaled = true
+
+		local usernameLabel = Instance.new("TextLabel")
+		usernameLabel.Name = "UsernameLabel"
+		usernameLabel.Parent = button
+		usernameLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		usernameLabel.Position = UDim2.new(0, 0, 0.01, 0)
+		usernameLabel.Size = UDim2.new(1, 0, 0, 20)
+		usernameLabel.Font = Enum.Font.SourceSans
+		usernameLabel.Text = player.Name
+		usernameLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+		usernameLabel.TextSize = 16
+		usernameLabel.TextYAlignment = Enum.TextYAlignment.Top
+		usernameLabel.TextScaled = true
+
+		button.MouseButton1Click:Connect(function()
+			local camera = game.Workspace.CurrentCamera
+			camera.CameraSubject = player.Character
+			camera.CameraType = Enum.CameraType.Follow
+		end)
+	end
+end
+
+populatePlayerList()
+
+game.Players.PlayerRemoving:Connect(populatePlayerList)
+--Closebutton
+local script = Instance.new('LocalScript', CloseButton)
+
+local frame = script.Parent.Parent 
+
+local function deleteGUI()
+	frame.Parent:Destroy() 
+end
+
+script.Parent.MouseButton1Click:Connect(deleteGUI)
+    else
+--ViewGUI_PC
+local UselessGUI = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local TextLabel = Instance.new("TextLabel")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local UIGridLayout = Instance.new("UIGridLayout")
+local CloseButton = Instance.new("TextButton")
+
+
+UselessGUI.Name = "UselessGUI"
+UselessGUI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+UselessGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+Frame.Parent = UselessGUI
+Frame.Active = true
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.Position = UDim2.new(0.49944815, 0, 0.49899599, 0)
+Frame.Size = UDim2.new(0, 463, 0, 271)
+
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.BorderSizePixel = 0
+TextLabel.Position = UDim2.new(0.397408158, 0, 0, 0)
+TextLabel.Size = UDim2.new(0, 95, 0, 34)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "ViewGUI"
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.TextSize = 30.000
+
+ScrollingFrame.Parent = Frame
+ScrollingFrame.Active = true
+ScrollingFrame.BackgroundColor3 = Color3.fromRGB(122, 122, 122)
+ScrollingFrame.Position = UDim2.new(-0.00215986022, 0, 0.125461251, 0)
+ScrollingFrame.Size = UDim2.new(0, 464, 0, 234)
+
+UIGridLayout.Parent = ScrollingFrame
+UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = Frame
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Position = UDim2.new(0.926565826, 0, 0, 0)
+CloseButton.Size = UDim2.new(0, 34, 0, 33)
+CloseButton.Font = Enum.Font.SourceSans
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.TextSize = 20.000
+
+local script = Instance.new('LocalScript', Frame)
+
+
+script.Parent.Draggable = true
+--Scrolling Frame
+local script = Instance.new('LocalScript', ScrollingFrame)
+
+local function populatePlayerList()
+	for _, button in ipairs(ScrollingFrame:GetChildren()) do
+		if button:IsA("TextButton") then
+			button:Destroy()
+		end
+	end
+
+
+	local players = game.Players:GetPlayers()
+
+
+	for _, player in ipairs(players) do
+		local button = Instance.new("TextButton")
+		button.Name = player.Name
+		button.Parent = ScrollingFrame
+		button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		button.Size = UDim2.new(1, 0, 0, 60)
+		button.Font = Enum.Font.SourceSans
+		button.Text = player.DisplayName
+		button.TextColor3 = Color3.fromRGB(0, 0, 0)
+		button.TextSize = 14
+
+		local usernameLabel = Instance.new("TextLabel")
+		usernameLabel.Name = "UsernameLabel"
+		usernameLabel.Parent = button
+		usernameLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		usernameLabel.Position = UDim2.new(0, 0, 0.01, 0)
+		usernameLabel.Size = UDim2.new(1, 0, 0, 20)
+		usernameLabel.Font = Enum.Font.SourceSans
+		usernameLabel.Text = player.Name
+		usernameLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+		usernameLabel.TextSize = 12
+		usernameLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+		button.MouseButton1Click:Connect(function()
+			local camera = game.Workspace.CurrentCamera
+			camera.CameraSubject = player.Character
+			camera.CameraType = Enum.CameraType.Follow
+		end)
+	end
+end
+
+populatePlayerList()
+
+game.Players.PlayerRemoving:Connect(populatePlayerList)
+--Close button
+local script = Instance.new('LocalScript', CloseButton)
+
+local frame = script.Parent.Parent 
+
+local function deleteGUI()
+	frame.Parent:Destroy() 
+end
+
+script.Parent.MouseButton1Click:Connect(deleteGUI)
+    end
+    Notify("Success", "Loaded uselessGUI(Might be useful for detecting exploiters).");
     end;
     if CMD("nexus") or CMD("nex") then
         local Player = GetPlayer(Args[2], LocalPlayer)
@@ -3232,8 +3370,6 @@ end
                 Infected[v.UserId] = v;
             end;
             Notify("Success", "Started a pandemic.", 2);
-        elseif not Player then
-            Notify("Error", Args[2] .. " is not a valid player / team.", 2);
         else
             Args[2] = Args[2]:lower()
             local First, Rest = Args[2]:sub(1, 1):upper(), Args[2]:sub(2);
@@ -3245,6 +3381,8 @@ end
             end);
             if Success then
                 Notify("Success", "Infected everyone in the " .. Team .. " team.")
+            else
+                Notify("Error", Args[2] .. " is not a valid player / team.", 2);
             end;
         end;
     end;
@@ -17239,25 +17377,72 @@ for i,v in next, MainGuiObjects do
 end;
 
 --// Init:
---PickupRemotes
-local function AutoPickupRemote()
-    while true do
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP)
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP)
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
-        task.wait()
-    end
-end
-spawn(AutoPickupRemote)
-
 local function CrimSpawn()
 workspace['Criminals Spawn'].SpawnLocation.Transparency = 0
 workspace['Criminals Spawn'].SpawnLocation.CanCollide = false
 end
 CrimSpawn()
-wait(0.2)
-game.Players.LocalPlayer.Character.Humanoid.Health = 0
-print("Resetted character to prevent autorespawn bug")
+Refresh()
+if isMobile then
+local gui = Instance.new("ScreenGui")
+gui.Name = "MovableGUI"
+gui.Parent = game.Players.LocalPlayer.PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 50, 0, 50)
+frame.Position = UDim2.new(0, 10, 0.5, -25)
+frame.BackgroundTransparency = 0.5
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.Draggable = true
+frame.Parent = gui
+
+local buttonH = Instance.new("TextButton")
+buttonH.Size = UDim2.new(0, 40, 0, 20)
+buttonH.Position = UDim2.new(0, 5, 0, 5)
+buttonH.Text = "H"
+buttonH.Parent = frame
+
+local buttonF = Instance.new("TextButton")
+buttonF.Size = UDim2.new(0, 40, 0, 20)
+buttonF.Position = UDim2.new(0, 5, 0, 30)
+buttonF.Text = "F"
+buttonF.Parent = frame
+
+local buttonC = Instance.new("TextButton")
+buttonC.Size = UDim2.new(0, 40, 0, 20)
+buttonC.Position = UDim2.new(0, 5, 0, 55)
+buttonC.Text = "C"
+buttonC.Parent = frame
+
+local screenSize = game:GetService("GuiService"):GetScreenResolution()
+local isMobile = game:GetService("UserInputService").TouchEnabled
+
+if isMobile then
+    frame.Position = UDim2.new(1, -60, 0, 10) 
+else
+    local guiWidth = frame.Size.X.Offset
+    local guiHeight = frame.Size.Y.Offset
+    local margin = 10 
+
+    frame.Position = UDim2.new(0, screenSize.X - guiWidth - margin, 0.5, -guiHeight / 2)
+end
+
+buttonH.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "H", false, game)
+end)
+
+buttonF.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "F", false, game)
+end)
+
+buttonC.MouseButton1Click:Connect(function()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
+end)
+print("User is on mobile, loading Mobile GUI")
+else
+print("User is on PC, loading Text2Emoji Converter")
+loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Text2Emoji.lua'))()
+end
 
 --// More ASA
 for i,v in pairs(workspace:FindFirstChild("Criminals Spawn"):GetChildren()) do
