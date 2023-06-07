@@ -17453,7 +17453,7 @@ end)
 print("User is on mobile, loading Mobile GUI")
 else
 print("User is on PC, loading Text2Emoji Converter")
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Text2Emoji.lua'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Text2Emoji/main/Main'))()
 end
 
 --// More ASA
