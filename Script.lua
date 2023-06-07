@@ -14254,7 +14254,8 @@ end);
 
 --// Loopkills:
 task.spawn(function()
-    while task.wait(.20) do
+    while task.wait(.1) do
+    local success, error = pcall(function()
         if next(Loopkilling) then
             local LKPlayers = {};
             for i,v in next, Loopkilling do
@@ -14270,6 +14271,11 @@ task.spawn(function()
                 Kill(LKPlayers);
             end;
         end;
+    end)
+    
+    if not success then
+        print("An error occurred:", error)
+    end
     end;
 end);
 
@@ -14611,22 +14617,28 @@ end);
 
 --// Team kill:
 task.spawn(function()
-    while task.wait(.3) do
-        if States.KillAll and game.Players.LocalPlayer.Backpack then
+    while task.wait(.2) do
+    local success, error = pcall(function()
+        if States.KillAll then
             KillPlayers(Players);
         end;
-        if States.KillInmates and game.Players.LocalPlayer.Backpack then
+        if States.KillInmates then
             KillPlayers(Teams.Inmates);
         end;
-        if States.KillGuards and game.Players.LocalPlayer.Backpack then
+        if States.KillGuards then
             KillPlayers(Teams.Guards);
         end;
-        if States.KillCriminals and game.Players.LocalPlayer.Backpack then
+        if States.KillCriminals then
             KillPlayers(Teams.Criminals);
         end;
-        if States.TaseAll and game.Players.LocalPlayer.Backpack then
+        if States.TaseAll then
             Tase(Players:GetPlayers());
         end;
+    end)
+    
+    if not success then
+        print("An error occurred:", error)
+    end
     end;
 end)
 
