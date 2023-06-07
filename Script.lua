@@ -266,7 +266,8 @@ local Commands = {
     "loopopendoors / loopdoors -- Loops open every doors";
     "antipunish / autoguard -- prevents you from being punished as guards";
     "keycard / key / card -- Pickup or obtain keycard";
-    "carspawn / car -- spawns a car";
+    "carspawn / cars / spawncar / scar -- spawns a car to your location";
+    "carbring / carb / bringcar / bcar -- brings the nearest car to your location";
     "noclip -- allows you to walk through walls";
     "clip -- disables noclip";
     "ff / forcefield -- enables forcefield";
@@ -1077,12 +1078,140 @@ function Refresh()
 died()
 end
 
+function spawncars()
+local players = game:GetService("Players")
+
+local me = players.LocalPlayer
+
+local myChar = me.Character
+local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
+local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+local targetChar = me and me.Character
+local targetTorso = targetChar and targetChar:FindFirstChild("Torso")
+local targetHuman = targetChar and targetChar:FindFirstChildOfClass("Humanoid")
+
+local prevPos = myRoot.CFrame
+
+local car = nil
+
+local e1 = tick() + 5
+
+task.spawn(function()
+    car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
+end)
+
+repeat task.wait()
+	if not car then
+	    if myHuman.Sit then
+	    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game)
+            task.wait(.1)
+            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+            end
+		myRoot.CFrame = CFrame.new(-910, 95, 2157)
+		workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
+	end
+until car or tick() - e1 >= 0
+
+if car and myHuman and myRoot and targetTorso and targetHuman then
+	car.PrimaryPart = car.RWD
+	local targetSeat = nil
+	do
+		for i,v in pairs(car.Body:GetChildren()) do
+			if v:IsA("Seat") and not v.Occupant then
+				targetSeat = v
+				break
+			end
+		end
+	end
+	local vehSeat = car.Body:WaitForChild("VehicleSeat")
+	local e1 = tick() + 3
+	repeat task.wait()
+		myRoot.CFrame = CFrame.new(car.Body.VehicleSeat.Position)
+		car.Body.VehicleSeat:Sit(myHuman)
+	until myHuman.Sit or not myHuman.Parent or not car.Parent or tick() - e1 >= 0
+	local e2 = tick() + 5
+	repeat task.wait()
+		car:SetPrimaryPartCFrame(targetTorso.CFrame)
+	until targetHuman.Sit or myHuman.Sit or not targetHuman.Parent or not myHuman.Parent or not car.Parent or tick() - e2 >= 0
+	car:SetPrimaryPartCFrame(prevPos)
+end
+end
+
+function bringcars()
+local players = game:GetService("Players")
+
+local me = players.LocalPlayer
+
+local myChar = me.Character
+local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
+local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+local targetChar = me and me.Character
+local targetTorso = targetChar and targetChar:FindFirstChild("Torso")
+local targetHuman = targetChar and targetChar:FindFirstChildOfClass("Humanoid")
+
+local prevPos = myRoot and myRoot.CFrame
+
+local car = nil
+
+local e1 = tick() + 5
+
+repeat task.wait()
+	for i,v in pairs(workspace.CarContainer:GetChildren()) do
+		if v:IsA("Model") and v:FindFirstChild("Body") and v.Body:FindFirstChild("VehicleSeat") and not v.Body.VehicleSeat.Occupant then
+			for ii,vv in pairs(v.Body:GetChildren()) do
+				if vv:IsA("Seat") and not vv.Occupant then
+					car = v
+					break
+				end
+			end
+			if car then
+				break
+			end
+		end
+	end
+	if not car then
+		myRoot.CFrame = CFrame.new(-910, 95, 2157)
+		workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
+	end
+until car or tick() - e1 >= 0
+
+myRoot.CFrame = prevPos
+
+if car and myHuman and myRoot and targetTorso and targetHuman then
+	car.PrimaryPart = car.RWD
+	local targetSeat = nil
+	do
+		for i,v in pairs(car.Body:GetChildren()) do
+			if v:IsA("Seat") and not v.Occupant then
+				targetSeat = v
+				break
+			end
+		end
+	end
+	local vehSeat = car.Body.VehicleSeat
+	local e1 = tick() + 3
+	repeat task.wait()
+		myRoot.CFrame = CFrame.new(car.Body.VehicleSeat.Position)
+		car.Body.VehicleSeat:Sit(myHuman)
+	until myHuman.Sit or not myHuman.Parent or not car.Parent or tick() - e1 >= 0
+	local e2 = tick() + 5
+	repeat task.wait()
+		car:SetPrimaryPartCFrame(targetTorso.CFrame)
+	until targetHuman.Sit or myHuman.Sit or not targetHuman.Parent or not myHuman.Parent or not car.Parent or tick() - e2 >= 0
+	car:SetPrimaryPartCFrame(prevPos)
+end
+end
+
 function Kill(PLAYERS)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
-    if not hasAK47 then
+    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
+        task.wait(.1)
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
         local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-        game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
         task.wait()
@@ -1264,6 +1393,11 @@ function LocalViewerAdded()
 end;
 
 function Teleport(Player, Position)
+        if game.Players.LocalPlayer.Character:WaitForChild("Humanoid").Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
 	local Character = Player and Player.Character
 	local Humanoid1 = Character and Character:FindFirstChildOfClass("Humanoid")
 	local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
@@ -1292,9 +1426,13 @@ function Teleport(Player, Position)
 					end
 				end
 				if not Car then
+                                    	if Humanoid.Sit then
+	                                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+                                            task.wait(.1)
+                                            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+                                        end
 					HumanoidRootPart.CFrame = CFrame.new(-910, 95, 2157)
 					workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
-                                        task.wait(3)
 				end
 			until Car or tick() - Tick1 >= 0
 			HumanoidRootPart.CFrame = LastPosition
@@ -1418,7 +1556,6 @@ function TeleportPlayers(Player1, Player2)
         end);
     else
         pcall(function()
-            SavePos();
 	local Character1 = Player1 and Player1.Character
 	local Humanoid1 = Character1 and Character1:FindFirstChildOfClass("Humanoid")
 	local HumanoidRootPart1 = Character1 and Character1:FindFirstChild("HumanoidRootPart")
@@ -1434,6 +1571,11 @@ function TeleportPlayers(Player1, Player2)
 		if Player1 ~= LocalPlayer then
 			local Car = nil
 			local Tick1 = tick() + 5
+                        if Humanoid.Sit then
+	                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+                            task.wait(.1)
+                            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+                        end
 			repeat task.wait()
 				for i,v in pairs(workspace.CarContainer:GetChildren()) do
 					if v:IsA("Model") and v:FindFirstChild("Body") and v.Body:FindFirstChild("VehicleSeat") and not v.Body.VehicleSeat.Occupant then
@@ -1449,9 +1591,13 @@ function TeleportPlayers(Player1, Player2)
 					end
 				end
 				if not Car then
+                                    	if Humanoid.Sit then
+	                                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+                                            task.wait(.1)
+                                            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+                                        end
 					HumanoidRootPart.CFrame = CFrame.new(-910, 95, 2157)
 					workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
-                                        task.wait(3)
 				end
 			until Car or tick() - Tick1 >= 0
 			HumanoidRootPart.CFrame = LastPosition
@@ -1487,7 +1633,6 @@ function TeleportPlayers(Player1, Player2)
 			HumanoidRootPart.CFrame = HumanoidRootPart2.CFrame
 		end
 	end
-            LoadPos();
         end);
     end;
 end;
@@ -1581,10 +1726,14 @@ end;
 
 function KillPlayers(TEAM, Whitelist)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
-    if not hasAK47 then
+    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
+        task.wait(.1)
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
         local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-        game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
         repeat
         game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-937.7429809570312, 96.49951171875, 2056.4794921875))
         task.wait()
@@ -3872,35 +4021,13 @@ coroutine.wrap(LagServer)(200);
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
         Notify("Success", "Timed out.", 2);
     end;
-    if CMD("carspawn") or CMD("car") or CMD("cars") then
-		pcall(function()
-			local OldPos = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
-			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-910, 95, 2157))
-			wait()
-			local car = nil
-			task.spawn(function()
-				car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
-			end)
-			repeat wait(.1)
-				local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
-				workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-			until car
-			repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
-			car.PrimaryPart = car.RWD
-			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(OldPos)
-			local Done = false
-			car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
-			repeat 
-				game:GetService("RunService").RenderStepped:Wait()
-				car:SetPrimaryPartCFrame(OldPos)
-				game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame =CFrame.new(car.Body.VehicleSeat.Position)
-				car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
-				if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
-					Done = true
-				end
-			until Done
-		end)
-                Notify("Success", "Brought a car to your location.", 2);
+    if CMD("carspawn") or CMD("spawncar") or CMD("scar") or CMD("cars") then
+        spawncars()
+        Notify("Success", "Spawned a car to your location.", 2);
+    end;
+    if CMD("carbring") or CMD("bringcar") or CMD("bcar") or CMD("carb") then
+        bringcars()
+        Notify("Success", "Brought a car to your location.", 2);
     end;
     if CMD("ia") or CMD("infammo") then
         local Tool = LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
@@ -3935,8 +4062,14 @@ coroutine.wrap(LagServer)(200);
                 if Player2.Character then
                     local Head = Player2.Character:FindFirstChild("Head")
                     if Head then
+                        SavePos()
                         TeleportPlayers(Player, Player2);
                         Notify("Success", "Teleported " .. Player.Name .. " to " .. Player2.Name .. ".");
+                        task.wait(2)
+                        game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game)
+                        task.wait(.1)
+                        game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+                        LoadPos()
                     end;
                 end;
             else
@@ -13408,41 +13541,14 @@ function UseRankedCommands(MESSAGE, Admin)
        local gotoplayer = Player.Character:GetPrimaryPartCFrame()
        SavePos()
        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = gotoplayer
-		pcall(function()
-			local OldPos = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
-			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-910, 95, 2157))
-			wait()
-			local car = nil
-			task.spawn(function()
-				car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
-			end)
-			repeat wait(.1)
-				local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
-				workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-			until car
-			repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
-			car.PrimaryPart = car.RWD
-			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(OldPos)
-			local Done = false
-			car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
-			repeat 
-				game:GetService("RunService").RenderStepped:Wait()
-				car:SetPrimaryPartCFrame(OldPos)
-				game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame =CFrame.new(car.Body.VehicleSeat.Position)
-				car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
-				if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
-					Done = true
-				end
-			until Done
-		end)
-local onseat = game.Players.LocalPlayer.Character.Humanoid.SeatPart
-if onseat then
-    game.Players.LocalPlayer.Character.Humanoid.Sit = false
-end
-       wait(0.4)
+       spawncars()
+       task.wait(1)
+       game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game)
+       task.wait(.1)
+       game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
        LoadPos()
        Chat("/w " .. Admin.Name .. " Success! Brought a car to your location");
-    end
+    end;
     if CMD2("arrest") then
         if AdminSettings.arrestcmds == true then
             SavePos();
@@ -14244,7 +14350,6 @@ task.spawn(function()
                 pcall(function()
                     if (v.Character.HumanoidRootPart.Position-Vector3.new(-297, 54, 2004)).Magnitude > 80 and v.Character.Torso.Anchored ~= true and v.Character.Humanoid.Health > 0 then
                         Teleport(v, CFrame.new(-297, 54, 2004));
-                        task.wait(2);
                     end;
                 end);
             end;
@@ -15267,10 +15372,6 @@ MT.__namecall = newcclosure(loadstring([[
             if ValidPlayer then
                 task.spawn(function()
                     if Info.FriendlyFireOldTeam == "Bright orange" or Info.FriendlyFireOldTeam == "Bright blue" then
-                        if ValidPlayer.Character and ValidPlayer.Character:FindFirstChild("Humanoid") and ValidPlayer.Character.Humanoid.Health == 0 and not ValidPlayer.TeamColor ~= BrickColor.new("Really red") then
-                               -- Do not execute the team change if the player is dead and not criminals
-                            return
-                        end
                         workspace.Remote.TeamEvent:FireServer("Medium stone grey");
                         task.wait(0.03);
                         workspace.Remote.TeamEvent:FireServer(Info.FriendlyFireOldTeam);
