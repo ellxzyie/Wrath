@@ -102,6 +102,7 @@ local script = Instance.new('LocalScript', CloseButton)
 local frame = script.Parent.Parent
 
 local function deleteGUI()
+	workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Head
 	frame.Parent:Destroy()
 end
 
