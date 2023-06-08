@@ -1,0 +1,29 @@
+local player = game.Players.LocalPlayer
+local part = Instance.new("Part")
+part.Size = Vector3.new(5, 5, 5)
+part.BrickColor = BrickColor.new("Bright blue")
+part.Shape = Enum.PartType.Ball
+part.CFrame = player.Character.HumanoidRootPart.CFrame
+part.Parent = workspace
+
+local function isPlayerNearBall(player)
+    local character = player.Character
+    if character then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            local ballPosition = part.Position
+            local playerPosition = humanoidRootPart.Position
+            local distance = (playerPosition - ballPosition).Magnitude
+            return distance <= 5 
+        end
+    end
+    return false
+end
+
+while task.wait() do
+    for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and isPlayerNearBall(otherPlayer) then
+            print(otherPlayer.Name .. " is near the ball!")
+        end
+    end
+end
