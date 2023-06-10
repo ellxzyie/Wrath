@@ -10,4 +10,4 @@ Wrath admin modified roblox prison life script
  
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Script.lua'))()
 
-Updates: Mobile GUI, Punch, Crawl, and Commandbar, Added TeamEvent spam crash, Fixed antiarrest, and fixed other stuff
+Updates: Adedd more stuff (IDK)
