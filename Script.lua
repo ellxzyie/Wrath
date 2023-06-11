@@ -1,7 +1,7 @@
 local ExecutionTime = tick();
 
 ------- MAIN SCRIPT -------
--- Wrath Admin by Zyrex, Dis, and Midnight
+-- Wrath Admin by Zyrex, Dis, and Midnight, Modified by ellxzyie :D
 -- Use /e <Command> to silently use commands
 
 -- Use /console or F9 or Fn + F9 when you say cmds
@@ -46,6 +46,7 @@ local AdminSettings = {tpcmds = true, killcmds = true, arrestcmds = true, givecm
 local OpenCommandBarKey = "H";
 local States = {
     AutoRespawn = false;
+    AntiVoid = true;
     ForceField = false;
     AutoArrest = false;
     AutoGivingGuns = false;
@@ -75,6 +76,9 @@ local States = {
     Rb = false;
     Rgb = false;
 };
+
+--// MyArguments:
+local myarguments = {};
 
 --// Tables:
 local AmmoGuns = {};
@@ -191,7 +195,7 @@ local Commands = {
     "The default prefix is '.' ";
     "output -- shows the output";
     "=== KILL COMMANDS ===";
-    "kill [plr] / kill guards, inmates, criminals -- kills a player, team, or all";
+    "kill [plr,guards,inmates,criminals] -- kills a player, team, or all";
     "mkill [plr] -- melee kill player or all";
     "lk [plr,all,inmates,guards,criminals] -- loopkills plr/team/all";
     "unlk [plr,all,inmates,guards,criminals] -- stops loopkill";
@@ -201,14 +205,14 @@ local Commands = {
     "defuse / unnuke [plr] -- removes nuke from plr";
     "aura / ka [plr] -- kill aura plr or all";
     "unka / unaura [plr] -- removes kill aura from player or all";
-    "virus / infect [plr] -- gives virus to a player (touch kill)";
-    "rvirus / unvirus [plr] -- remove virus from player";
+    "virus / infect [plr, team] -- gives virus to a player/team (touch kill)";
+    "rvirus / unvirus [plr, all] -- remove virus from player";
     "sp / spampunch -- toggles spam punch (your punches will be really fast if you hold down F)";
     "pa / punchaura -- toggles punch aura (your punches have more range)";
     "op / onepunch [plr] -- toggles one punch (your punches will insta kill)";
     "os / oneshot [plr] -- toggles one shot for plr";
     "shootback / sb [plr] -- shoot back plr (when they get shot the person who shot them dies)";
-    "clk / clearloopkills -- clears loopkill tables (EVERY LOOPKILL INCLUDING TEAMKILLS)";
+    "clk / clearlooped / clearloopkills -- unloopkills all players (Including meleekill)";
     "clv -- clear virus";
     "clka -- clear kill auras";
     "clt -- clear loop tase";
@@ -221,9 +225,11 @@ local Commands = {
     "getlt / getlooptase -- gets all players that are being loop tased";
     "getmlk / getmeleeloopkill -- gets all players that are being melee loop killed";
     "=== ARREST/TAZE COMMANDS ===";
+    "antiarrest / aar -- makes you still move even when arrested";
     "sa [plr] -- spam arrest plr";
     "unsa / breaksa -- breaks spam arrest";
     "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
+    "breakarrest / ba -- emergency stop if you cant arrest the player (either flying, speedhacks, or player keeps resetting)";
     "aa / arrestaura -- arrest aura";
     "lt [plr,all] -- loop tase plr or all";
     "unlt [plr,all] -- stops loop tase plr or all";
@@ -261,6 +267,7 @@ local Commands = {
     "psettings / ps -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds/karma] [true, immune / false, not immune]";
     "getps / getprotectedsettings -- gets all current configuration settings for protected players";
     "=== MISC ===";
+    "breaktigeradmin / bta -- execute if any tiger admin user is looping you";
     "refresh / ref / re -- Refresh character";
     "reset / res -- Reset character";
     "freeloot / loot / pinata -- makes you poop out free loot";
@@ -329,7 +336,7 @@ local Commands = {
     "def / defenses -- enables all defenses";
     "undef / undefenses -- disables all defenses";
     "=== LAG/CRASH COMMANDS ===";
-    "crashserver / servercrash / servcrash -- crashes server using m9";
+    "crashserver / servercrash / svcrash -- crashes server using m9";
     "sc / softcrash -- freezes everyone's screen but keeps the server alive, best way to empty servers";
     "lag [strength] -- lags server with strength indefinitely";
     "unlag -- stops lag";
@@ -356,6 +363,7 @@ local Commands = {
     "border [plr] -- teleports to board";
     "1v1 [plr] -- teleports to 1v1 place";
     "mcd -- teleports you back to macdonalds";
+    "mcd2 -- teleports you back to mcdonalds2";
     "macdonalds / mac / mc -- spawns macdonalds";
     "macdonalds2 / mac2 / mc2 -- spawns mcdonalds2";
     "kitchen / kit [plr] -- teleports to kitchen"; 
@@ -373,6 +381,7 @@ local Commands = {
     "shopsroof / sr2 [plr] -- teleports to shop roof";
     "storeroof / sr [plr] -- teleports to storeroof";
     "hidingspot / hs [plr] -- teleports to hiding spot";
+    "narrowspot / ns -- teleports you to narrowspot";
     "secret  [plr] -- teleports to secret";
     "store [plr] -- teleports to store";
     "gas [plr] -- teleports to gas station";
@@ -569,7 +578,7 @@ function Arrest(PLR, TIMES)
                 LocalPlayer.Character:SetPrimaryPartCFrame(PLR.Character.Head.CFrame * CFrame.new(0, 0, 1));
                 task.wait()
                 coroutine.wrap(ArrestEvent)(PLR, 1);
-                if PLR.TeamColor == BrickColor.new("Bright blue") or not IllegalRegion(PLR) or not Players:FindFirstChild(PLR.Name) then
+                if PLR.TeamColor == BrickColor.new("Bright blue") or PLR.TeamColor == BrickColor.new("Medium stone grey") or myarguments.breakarrest or not IllegalRegion(PLR) or not Players:FindFirstChild(PLR.Name) then
                     break
                 end
                 end
@@ -879,6 +888,8 @@ end;
 function AddToQueue(Function)
     CommandQueue[#CommandQueue+1] = Function;
 end;
+
+myarguments.breakarrest = false
 local originalPosition
 local LoopOpenDoors = false
 local AntiPunish = false
@@ -1022,6 +1033,12 @@ local function characterAdded()
             startFly()
         end
         LoadCameraPos()
+        if myarguments.breaktigeradmin then
+        States.AntiVoid = true
+        myarguments.breaktigeradmin = false
+        task.wait(.3)
+        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = myarguments.oldposition1
+        end
         if not hasAlreadyDied and not isChangingTeamToInmates and player.TeamColor == BrickColor.new("Bright orange") and oldTeamIsCriminals and States.AntiArrest then
         local crimspawnpoint
         repeat
@@ -1082,6 +1099,17 @@ local function characterAdded()
           --Placeholder
         end
     end
+    --Additional check to fully make sure player is on old position (Because sometimes autorespawn does not spawn back to old position and also in other script like tiger admin)
+    task.spawn(function()
+        task.wait(.4)
+        if not char.HumanoidRootPart.CFrame == diedpos and not myarguments.breaktigeradmin then
+            repeat task.wait(.09)
+            SaveCameraPos()
+            char:WaitForChild("HumanoidRootPart").CFrame = diedpos
+            until char.HumanoidRootPart.CFrame == diedpos
+            LoadCameraPos()
+        end
+    end)
 end
 
 diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
@@ -1093,22 +1121,12 @@ end
 
 function spawncars()
 local players = game:GetService("Players")
-
 local me = players.LocalPlayer
-
 local myChar = me.Character
 local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
 local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-local targetChar = me and me.Character
-local targetTorso = targetChar and targetChar:FindFirstChild("Torso")
-local targetHuman = targetChar and targetChar:FindFirstChildOfClass("Humanoid")
-
 local prevPos = myRoot.CFrame
-
 local car = nil
-
-local e1 = tick() + 5
-
 task.spawn(function()
     car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
 end)
@@ -1121,32 +1139,22 @@ repeat task.wait()
             game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
             end
 		myRoot.CFrame = CFrame.new(-910, 95, 2157)
+                task.spawn(function()
 		workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
+                end)
 	end
-until car or tick() - e1 >= 0
+until car
 
-if car and myHuman and myRoot and targetTorso and targetHuman then
+if car then
+        repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
 	car.PrimaryPart = car.RWD
-	local targetSeat = nil
-	do
-		for i,v in pairs(car.Body:GetChildren()) do
-			if v:IsA("Seat") and not v.Occupant then
-				targetSeat = v
-				break
-			end
-		end
-	end
-	local vehSeat = car.Body:WaitForChild("VehicleSeat")
-	local e1 = tick() + 3
 	repeat task.wait()
 		myRoot.CFrame = CFrame.new(car.Body.VehicleSeat.Position)
 		car.Body.VehicleSeat:Sit(myHuman)
-	until myHuman.Sit or not myHuman.Parent or not car.Parent or tick() - e1 >= 0
-	local e2 = tick() + 5
-	repeat task.wait()
-		car:SetPrimaryPartCFrame(targetTorso.CFrame)
-	until targetHuman.Sit or myHuman.Sit or not targetHuman.Parent or not myHuman.Parent or not car.Parent or tick() - e2 >= 0
-	car:SetPrimaryPartCFrame(prevPos)
+                car:SetPrimaryPartCFrame(prevPos)
+                print("debug_loop is running!")
+	until myHuman.Sit or not myHuman.Parent or not car.Parent
+	print("debug_carspawned!")
 end
 end
 
@@ -1276,13 +1284,13 @@ function Kill(PLAYERS)
         end
     end
 
-    ItemHandler(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP)
+    ItemHandler(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP)
+    ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
 
     pcall(function()
             
-        local Gun = LocalPlayer.Backpack:FindFirstChild("Remington 870") or LocalPlayer.Character:FindFirstChild("Remington 870")
+        local Gun = LocalPlayer.Backpack:FindFirstChild("M4A1") or LocalPlayer.Character:FindFirstChild("M4A1")
         if not Gun then
-            ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
             Gun = LocalPlayer.Backpack:FindFirstChild("AK-47") or LocalPlayer.Character:FindFirstChild("AK-47")
         end
         WhitelistItem(Gun)
@@ -1807,12 +1815,12 @@ print("Moved crimpad")
         end;
     end;
 
-    ItemHandler(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP);
+    ItemHandler(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP);
+    ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
 
     pcall(function()
-        local Gun = LocalPlayer.Backpack:FindFirstChild("Remington 870") or LocalPlayer.Character:FindFirstChild("Remington 870")
+        local Gun = LocalPlayer.Backpack:FindFirstChild("M4A1") or LocalPlayer.Character:FindFirstChild("M4A1")
         if not Gun then
-            ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
             Gun = LocalPlayer.Backpack:FindFirstChild("AK-47") or LocalPlayer.Character:FindFirstChild("AK-47")
         end;
         WhitelistItem(Gun);
@@ -2515,10 +2523,12 @@ end
             if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.FriendlyFire then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
-            if player.TeamColor == BrickColor.new("Really red") then
+            if player.TeamColor == BrickColor.new("Really red") and not States.FriendlyFire then
             oldTeamIsCriminals = true
             else
-            task.wait(.3)
+            if oldTeamIsCriminals then
+            task.wait(.4)
+            end
             oldTeamIsCriminals = false
             end
             end
@@ -2536,7 +2546,9 @@ end
         workspace.Remote.TeamEvent:FireServer("Bright blue")
         while Pinata do
             task.wait(0.6)
-            game.Players.LocalPlayer.Character.Humanoid.Health = 0
+            if LocalPlayer.Character:WaitForChild("Humanoid") and LocalPlayer.Character:WaitForChild("HumanoidRootPart") then
+            game.Players.LocalPlayer.Character:WaitForChild("Humanoid").Health = 0
+            end
         end
     end;
     if CMD("unpinata") or CMD("unfreeloot") or CMD("unloot") then
@@ -2918,6 +2930,19 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
     end;
+    if CMD("narrowspot") or CMD("ns") then
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-347.5849, 54.1742592, 1835.85608, 0.608338475, 2.53569148e-08, -0.793677747, -1.48728141e-08, 1, 2.05489084e-08, 0.793677747, -6.96470048e-10, 0.608338475)
+        Notify("Success", "Teleported to narrowspot.", 2);
+    end;
+    if CMD("breaktigeradmin") or CMD("bta") then
+        States.AntiVoid = false
+        myarguments.breaktigeradmin = true
+        Notify("Success", "Now breaking tiger admin loopkill.", 2);
+        repeat task.wait() until not LocalPlayer.Character:FindFirstChild("ForceField")
+        myarguments.oldposition1 = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+        task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(1473.64368, -495.32950, 2345.03027, 0.675599456, 1.20850832e-08, 0.737268865, 8.84390131e-12, 1, -1.63997953e-08, -0.737268865, 1.10862128e-08, 0.675599456)
+    end;
     if CMD("rj") or CMD("rejoin") then
         Notify("Success", "Rejoining...", 2);
         getgenv().Rejoining = true
@@ -2952,13 +2977,13 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
          if Args[2] == "all" or Args[2] == "a" then
             KillPlayers(Players);
             Notify("Success", "Now killed all.", 2);
-        elseif Args[2] == "guards" or Args[2] == "g" then
+        elseif Args[2] == "guards" or Args[2] == "guard" or Args[2] == "g" then
             KillPlayers(Teams.Guards)
             Notify("Success", "Now killed guards.", 2);
-        elseif Args[2] == "inmates" or Args[2] == "i" then
+        elseif Args[2] == "inmates" or Args[2] == "inmate" or Args[2] == "i" then
            KillPlayers(Teams.Inmates)
            Notify("Success", "Now killed inmates.", 2);
-        elseif Args[2] == "criminals" or Args[2] == "c" then
+        elseif Args[2] == "criminals" or Args[2] == "criminal" or Args[2] == "crims" or Args[2] == "c" then
             KillPlayers(Teams.Criminals)
             Notify("Success", "Now killed Criminals.", 2);
         else
@@ -2975,13 +3000,13 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
         if Args[2] == "all" then
             States.KillAll = true;
             Notify("Success", "Now loop-killing everyone.", 2);
-        elseif Args[2] == "guards" or Args[2] == "g" then
+        elseif Args[2] == "guards" or Args[2] == "guard" or Args[2] == "g" then
             States.KillGuards = true;
             Notify("Success", "Now loop-killing Guards.", 2);
-        elseif Args[2] == "inmates" or Args[2] == "i" then
+        elseif Args[2] == "inmates" or Args[2] == "inmate" or Args[2] == "i" then
             States.KillInmates = true;
             Notify("Success", "Now loop-killing Inmates.", 2);
-        elseif Args[2] == "criminals" or Args[2] == "c" then
+        elseif Args[2] == "criminals" or Args[2] == "criminal" or Args[2] == "c" then
             States.KillCriminals = true;
             Notify("Success", "Now loop-killing Criminals.", 2);
         else
@@ -3002,19 +3027,19 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
             States.KillCriminals = false;
             Loopkilling = {};
             Notify("Success", "Unloop-killed everyone.", 2);
-        elseif Args[2] == "guard" or Args[2] == "g" then
+        elseif Args[2] == "guards" or Args[2] == "guard" or Args[2] == "g" then
             States.KillGuards = false;
             for i,v in pairs(Teams.Guards:GetPlayers()) do
                 Loopkilling[v.UserId] = nil;
             end;
             Notify("Success", "Unloop-killed Guards.", 2);
-        elseif Args[2] == "i" or Args[2] == "inmate" then
+        elseif Args[2] == "i" or Args[2] == "inmate" or Args[2] == "inmates" then
             States.KillInmates = false;
             for i,v in pairs(Teams.Inmates:GetPlayers()) do
                 Loopkilling[v.UserId] = nil;
             end;
             Notify("Success", "Unloop-killed Inmates.", 2);
-        elseif Args[2] == "c" or Args[2] == "crims" then
+        elseif Args[2] == "c" or Args[2] == "crims" or Args[2] == "criminals" or Args[2] == "criminal" then
             States.KillCriminals = false;
             for i,v in pairs(Teams.Criminals:GetPlayers()) do
                 Loopkilling[v.UserId] = nil;
@@ -3030,7 +3055,7 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
             end;
         end;
     end;
-    if CMD("clk") or CMD("clearlooped") then
+    if CMD("clk") or CMD("clearlooped") or CMD("clearloopkills") or CMD("clearloopkilled") then
         States.KillAll = false;
         States.KillGuards = false;
         States.KillInmates = false;
@@ -3468,7 +3493,8 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
         if Player then
             Arrest(Player, Times);
             Notify("Success", "Arrested " .. Player.Name .. ".", 2);
-        elseif Args[2] == "all" then
+        end;
+        if Args[2] == "all" then
             for i,v in pairs(Players:GetPlayers()) do
                 if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") then
                     if (v.TeamColor.Name == "Bright orange" and IllegalRegion(v)) or v.TeamColor.Name == "Really red" then
@@ -3478,16 +3504,27 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
             end;
             Notify("Success", "Arrested everyone.", 2);
         elseif not Player then
-            Notify("Error", Args[2] .. " is not a valid player / team.", 2);
+            Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
         for i = 1, 10 do
             LoadPos();
             task.wait();
         end;
     end;
+    if CMD("breakarrest") or CMD("ba") then
+        myarguments.breakarrest = true
+        Notify("Success", "Stopped arrest.", 2);
+        task.wait(.1)
+        myarguments.breakarrest = false
+    end;
     if CMD("autoarrest") then
         States.AutoArrest = true
         Notify("Success", "AutoArresting Players.", 2);
+        myarguments.alreadyautoarrestingplayers = false
+        if myarguments.alreadyautoarrestingplayers then
+        Notify("Failed", "Already AutoArresting Players!", 2);
+        else
+        myarguments.alreadyautoarrestingplayers = true
         while States.AutoArrest do
             for i,v in pairs(Players:GetPlayers()) do
                 if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") then
@@ -3498,11 +3535,14 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
                     end;
                 end;
             end;
-        wait(1)
+        wait(.3)
+        end
         end
     end;
     if CMD("unautoarrest") then
         States.AutoArrest = false
+        myarguments.alreadyautoarrestingplayers = false
+        myarguments.breakarrest = true
         Notify("Success", "Stopped AutoArrest.", 2);
     end;
     if CMD("speed") or CMD("walkspeed") then
@@ -3945,7 +3985,7 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
             end;
         end);
     end;
-    if CMD("crashserver") or CMD("servercrash") or CMD("servcrash") then
+    if CMD("crashserver") or CMD("servercrash") or CMD("svcrash") then
 	if #game:GetService("Teams").Guards:GetPlayers() < 8 then
                 SaveCameraPos()
                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
@@ -4983,7 +5023,7 @@ end
         ClickTeleports = {};
         Notify("Success", "Cleared click teleports.", 2);
     end;
-    if CMD("hop") then
+    if CMD("hop") or CMD("svhop") or CMD("serverhop") then
         local FoundServers = {};
         for i,v in pairs(HttpService:JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")).data) do
             if type(v) == "table" and v.playing < v.maxPlayers and v.id ~= game.JobId then
@@ -5443,22 +5483,27 @@ end
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
     end;
-    if CMD("mcd") then
-        local Player = GetPlayer(Args[2], LocalPlayer);
-        if Player then
-            Teleport(Player, CFrame.new(-39.30183410644531, 11856.84765625, -5.665815830230713));
-            Notify("Success", "Teleported " .. Player.Name .. " to back to mcdonalds.", 2);
-        else
-            Notify("Error", Args[2] .. " is not a valid player.", 2);
-        end;
-    end;
-    if CMD("macdonalds2") or CMD("mc2") or CMD("mac2") then
+    if CMD("macdonalds2") or CMD("mcdonalds2") or CMD("mc2") or CMD("mac2") then
+        if not myarguments.has_spawnedmcdonalds2 then
+        myarguments.has_spawnedmcdonalds2 = true
+        Notify("Loading", "Please wait...", 2);
         loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/Mcdonalds2.lua'))()
         Notify("Success", "Spawned Mcdonalds2.", 2);
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-67.3360062, 3.20001101, 25.5391026, 0.0349006653, -5.27362642e-09, -0.999390781, -2.12764095e-09, 1, -5.3511422e-09, 0.999390781, 2.31310326e-09, 0.0349006653)
+        Notify("Success", "Teleported to mcdonalds", 2);
+        end
     end;
-    if CMD("macdonalds") or CMD("mc") or CMD("mac") then
+    if CMD("macdonalds") or CMD("mcdonalds2") or CMD("mc") or CMD("mac") then
+        if not myarguments.has_spawnedmcdonalds then
+        myarguments.has_spawnedmcdonalds = true
+        Notify("Loading", "Please wait...", 2);
         loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/OriginalMcdonalds.lua'))()
         Notify("Success", "Spawned Mcdonalds.", 2);
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-20.500293731689453, 11865.7998046875, -24.149545669555664)
+        Notify("Success", "Teleported to mcdonalds", 2);
+        end
     end;
     if CMD("ad") or CMD("advertise") or CMD("script") or CMD("flex") or CMD("link") then
         Chat("Bible admin is better than your garbage triggered admin! (Tiger admin) Get bible admin today at justpaste.it/a81yt");
@@ -7487,7 +7532,7 @@ end)
 --// Anti Void:
 task.spawn(function()
     while task.wait(0.03) do
-        if LocalPlayer.Character then
+        if LocalPlayer.Character and States.AntiVoid then
             if LocalPlayer.Character.PrimaryPart then
                 if LocalPlayer.Character.PrimaryPart.Position.Y < 1 then
                     Teleport(LocalPlayer, CFrame.new(888, 100, 2388));
