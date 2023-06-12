@@ -46,6 +46,7 @@ local AdminSettings = {tpcmds = true, killcmds = true, arrestcmds = true, givecm
 local OpenCommandBarKey = "H";
 local States = {
     AutoRespawn = false;
+    AimLocking = false;
     AntiVoid = true;
     ForceField = false;
     AutoArrest = false;
@@ -80,6 +81,53 @@ local States = {
 --// MyArguments:
 local myarguments = {};
 
+--// AimLock:
+task.spawn(function()
+local Players = game.Players
+local LocalPlayer = Players.LocalPlayer
+local GetPlayers = Players.GetPlayers
+local Camera = workspace.CurrentCamera
+local WTSP = Camera.WorldToScreenPoint
+local FindFirstChild = game.FindFirstChild
+local Vector2_new = Vector2.new
+local Mouse = LocalPlayer.GetMouse(LocalPlayer)
+function ClosestChar()
+    local Max, Close = math.huge
+    for I,V in pairs(GetPlayers(Players)) do
+        if V ~= LocalPlayer and V.Team ~= LocalPlayer.Team and V.Character then
+            local Head = FindFirstChild(V.Character, "Head")
+            if Head then
+                local Pos, OnScreen = WTSP(Camera, Head.Position)
+                if OnScreen then
+                    local Dist = (Vector2_new(Pos.X, Pos.Y) - Vector2_new(Mouse.X, Mouse.Y)).Magnitude
+                    if Dist < Max then
+                        Max = Dist
+                        Close = V.Character
+                    end
+                end
+            end
+        end
+    end
+    return Close
+end
+ 
+local MT = getrawmetatable(game)
+local __namecall = MT.__namecall
+setreadonly(MT, false)
+MT.__namecall = newcclosure(function(self, ...)
+    local Method = getnamecallmethod()
+    if Method == "FindPartOnRay" and not checkcaller() and tostring(getfenv(0).script) == "GunInterface" then
+        local Character = ClosestChar()
+        if Character and States.AimLocking then
+            return Character.Head, Character.Head.Position
+        end
+    end
+ 
+    return __namecall(self, ...)
+end)
+setreadonly(MT, true)
+end)
+
 --// Tables:
 local AmmoGuns = {};
 local Walls = {};
@@ -99,6 +147,7 @@ local ArmorSpamFlags = {};
 local MeleeKilling = {};
 local SpeedKilling = {};
 local Nukes = {};
+local SuperNukes = {};
 local ClickTeleports = {};
 local Oneshots = {};
 local Onepunch = {};
@@ -196,12 +245,14 @@ local Commands = {
     "output -- shows the output";
     "=== KILL COMMANDS ===";
     "kill [plr,guards,inmates,criminals] -- kills a player, team, or all";
-    "mkill [plr] -- melee kill player or all";
-    "lk [plr,all,inmates,guards,criminals] -- loopkills plr/team/all";
-    "unlk [plr,all,inmates,guards,criminals] -- stops loopkill";
-    "mlk [plr,all] -- melee loopkil plr/all";
-    "unmlk [plr,all] -- unmelee loopkill plr/all";
-    "nuke / kamikaze [plr] -- turns plr into a nuke";
+    "mkill / meleekill [plr] -- melee kill player or all";
+    "lk / loopkill [plr,team] -- loopkills plr/team/all";
+    "unlk / unloopkill [plr,team] -- stops loopkill";
+    "mlk / meleeloopkill [plr,all] -- melee loopkil plr/all";
+    "unmlk /unmeleeloopkill [plr,all] -- unmelee loopkill plr/all";
+    "nuke / kamikaze [plr] -- if player dies, everyone dies";
+    "supernuke / snuke [plr] -- if player dies, SERVER CRASHES!";
+    "unsupernuke / unsnuke [plr] -- remove supernuke from plr";
     "defuse / unnuke [plr] -- removes nuke from plr";
     "aura / ka [plr] -- kill aura plr or all";
     "unka / unaura [plr] -- removes kill aura from player or all";
@@ -229,13 +280,15 @@ local Commands = {
     "sa [plr] -- spam arrest plr";
     "unsa / breaksa -- breaks spam arrest";
     "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
+    "autoarrest / autoar -- automatically arrests all players";
     "breakarrest / ba -- emergency stop if you cant arrest the player (either flying, speedhacks, or player keeps resetting)";
     "aa / arrestaura -- arrest aura";
-    "lt [plr,all] -- loop tase plr or all";
-    "unlt [plr,all] -- stops loop tase plr or all";
+    "lt / looptase [plr,all] -- loop tase plr or all";
+    "unlt / looptase [plr,all] -- stops loop tase plr or all";
     "tase [plr,all] -- tase a player or all";
     "ta / taseaura [plr] -- gives plr tase aura";
     "=== GUNS/ITEMS COMMANDS ===";
+    "aimlock / hlock / headlock -- makes your guns headlock to players";
     "ak47 / ak -- gives you ak47 (Obviously)";
     "remington / shotty / shotgun -- gives you remington (Obviously)";
     "m9 / pistol -- gives you m9 (Obviously)";
@@ -362,10 +415,9 @@ local Commands = {
     "cells / cel [plr] -- teleports to cells";
     "border [plr] -- teleports to board";
     "1v1 [plr] -- teleports to 1v1 place";
-    "mcd -- teleports you back to macdonalds";
-    "mcd2 -- teleports you back to mcdonalds2";
-    "macdonalds / mac / mc -- spawns macdonalds";
-    "macdonalds2 / mac2 / mc2 -- spawns mcdonalds2";
+    "macdonalds / mac / mc -- spawns client sided macdonalds";
+    "macdonalds2 / mac2 / mc2 -- spawns client sided mcdonalds2";
+    "macdonalds3 / mac3 / mc2 -- spawns client sided mcdonalds3";
     "kitchen / kit [plr] -- teleports to kitchen"; 
     "cbr [plr] -- teleports to criminal base roof";
     "sewer / sew / swr [plr] -- teleport to sewer ";
@@ -1140,7 +1192,8 @@ repeat task.wait()
             end
 		myRoot.CFrame = CFrame.new(-910, 95, 2157)
                 task.spawn(function()
-		workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
+                local button = workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
+                workspace.Remote.ItemHandler:InvokeServer(button)
                 end)
 	end
 until car
@@ -2340,7 +2393,7 @@ function UseCommand(MESSAGE)
                                  LoadCameraPos()
                                  repeat
                                  task.wait()
-	                         crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                                  workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
                                  until player.TeamColor == BrickColor.new("Really red")
                                  local object = workspace['Criminals Spawn'].SpawnLocation
@@ -2448,34 +2501,30 @@ function UseCommand(MESSAGE)
     if CMD("forcefield") or CMD("ff") then
         local clientplayer = game.Players.LocalPlayer
         local guardsTeam = game:GetService("Teams").Guards
-        if not clientplayer.TeamColor == BrickColor.new("Bright blue") and guardsTeam and #guardsTeam:GetPlayers() >= 8 then
+        if not clientplayer.TeamColor == BrickColor.new("Bright blue") and #guardsTeam:GetPlayers() >= 8 then
             Notify("Error", " Guards Team full!", 2); 
         else
             Notify("Success", " Enabled forcefield.", 2); 
         States.ForceField = true
+        if not myarguments.alreadyforcefield then
+        myarguments.alreadyforcefield = true
         local guardsTeam = game:GetService("Teams").Guards
         SavedOldTeam = game.Players.LocalPlayer.TeamColor
-        local teamChanged = false
 while States.ForceField do
-    task.wait()
-    if not player.Character:FindFirstChild("ForceField") then
-        if not teamChanged then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
             if guardsTeam and #guardsTeam:GetPlayers() >= 8 then
                 workspace.Remote.TeamEvent:FireServer("Bright orange")
             end
             workspace.Remote.TeamEvent:FireServer("Bright blue")
-            teamChanged = true   
-        end
-    else
-        teamChanged = false 
-    end
+            task.wait(6)
 end
         end
+         end
     end;
     if CMD("unforcefield") or CMD("unff") then
         States.ForceField = false
+        myarguments.alreadyforcefield = false
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
@@ -2921,6 +2970,22 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
         LocalPlayer.Character:WaitForChild("Humanoid").Health = 0
         Notify("Success", "Resetted character.");
     end;
+    if CMD("headlock") or CMD("hlock") or CMD("aimlock") then
+        States.AimLocking = not States.AimLocking
+        if States.AimLocking then
+        Notify("Success", "Now aimlocking to players heads");
+        else
+        Notify("Success", "Disabled aimlocking to players head");
+        end
+    end;
+    if CMD("infyield") or CMD("infiniteyield") or CMD("iy") then
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        Notify("Success", "Loaded Infinite Yield.");
+    end;
+    if CMD("fatesadmin") or CMD("fa") or CMD("fates") then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/fatesc/fates-admin/main/main.lua"))();
+        Notify("Success", "Loaded Fates Admin.");
+    end;
     if CMD("nexus") or CMD("nex") then
         local Player = GetPlayer(Args[2], LocalPlayer)
         if Player then
@@ -3103,12 +3168,12 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
     if CMD("gun") or CMD("guns") or CMD("allguns") then
         GiveGuns();
         Notify("Success", "Obtained all guns.", 2);
-    end
+    end;
     if CMD("team") or CMD("t") then
         -- :team 255 255 255 = white
         SavePos();
         if not Args[4] then
-            if Args[2] == "inmates" or Args[2] == "i" then
+            if Args[2] == "inmates" or Args[2] == "inmate" or Args[2] == "i" then
                 isChangingTeamToInmates = true
                 SaveCameraPos()
                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
@@ -3118,13 +3183,13 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
                 LoadCameraPos()
                 task.wait(.2)
                 isChangingTeamToInmates = false
-            elseif Args[2] == "guards" or Args[2] == "g" then
+            elseif Args[2] == "guards" or Args[2] == "guard" or Args[2] == "g" then
                 SaveCameraPos()
                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
                 TeamEvent("Bright blue");
                 Notify("Success", "Changed team to Guards.", 2);
                 LoadCameraPos()
-            elseif Args[2] == "criminals" or Args[2] == "c" then
+            elseif Args[2] == "criminals" or Args[2] == "criminal" or Args[2] == "c" then
                 SaveCameraPos()
                 diedpos = char:WaitForChild("HumanoidRootPart").CFrame
                 local crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
@@ -3517,9 +3582,9 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
         task.wait(.1)
         myarguments.breakarrest = false
     end;
-    if CMD("autoarrest") then
+    if CMD("autoarrest") or CMD("autoar") then
         States.AutoArrest = true
-        Notify("Success", "AutoArresting Players.", 2);
+        Notify("Success", "AutoArresting Players (unautoarrest to disable).", 2);
         myarguments.alreadyautoarrestingplayers = false
         if myarguments.alreadyautoarrestingplayers then
         Notify("Failed", "Already AutoArresting Players!", 2);
@@ -4888,6 +4953,25 @@ end
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
     end;
+    if CMD("supernuke") then
+        local Player = GetPlayer(Args[2], LocalPlayer);
+        if Player then
+            SuperNukes[Player.UserId] = Player;
+            Chat("!!! " .. Player.DisplayName .. " has turned into a SuperNuke - if they die, THE SERVER WILL BE CRASHED!!!");
+            Notify("Success", "Turned " .. Player.Name .. " into a SuperNuke.", 2);
+        else
+            Notify("Error", Args[2] .. " is not a valid player.", 2);
+        end;
+    end;
+    if CMD("unsupernuke") then
+        local Player = GetPlayer(Args[2], LocalPlayer);
+        if Player then
+            SuperNukes[Player.UserId] = nil;
+            Notify("Success", "Removed SuperNuke from " .. Player.Name .. ".", 2);
+        else
+            Notify("Error", Args[2] .. " is not a valid player.", 2);
+        end;
+    end;  
     if CMD("defuse") or CMD("unnuke") then
         local Player = GetPlayer(Args[2], LocalPlayer);
         if Player then
@@ -5494,6 +5578,17 @@ end
         Notify("Success", "Teleported to mcdonalds", 2);
         end
     end;
+    if CMD("macdonalds3") or CMD("mcdonalds3") or CMD("mc3") or CMD("mac3") then
+        if not myarguments.has_spawnedmcdonalds3 then
+        myarguments.has_spawnedmcdonalds3 = true
+        Notify("Loading", "Please wait...")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/Mcdonalds3.lua'))()
+        Notify("Success", "Spawned Mcdonalds3");
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-84.1996231, 2458.79199, 174.260544, -0.996263027, -5.65577523e-08, 0.0863714442, -6.0232054e-08, 1, -3.99346263e-08, -0.0863714442, -4.49877184e-08, -0.996263027)
+        Notify("Success", "Teleported to Mcdonalds3");
+        end
+    end; 
     if CMD("macdonalds") or CMD("mcdonalds2") or CMD("mc") or CMD("mac") then
         if not myarguments.has_spawnedmcdonalds then
         myarguments.has_spawnedmcdonalds = true
@@ -7042,6 +7137,83 @@ task.spawn(function()
     end;
 end)
 
+--// SuperNukes:
+task.spawn(function()
+    while task.wait(0.03) do
+        if next(SuperNukes) then
+            for i,v in next, SuperNukes do
+                if v.Character then
+                    local Humanoid = v.Character:FindFirstChildWhichIsA("Humanoid");
+                    if Humanoid then
+                        if Humanoid.Health <= 0 then
+                            Chat("!!! THE SUPERNUKE (" .. v.DisplayName .. ") HAS BEEN ACTIVATED - SAY YOUR LAST GOODBYES BEFORE THE SERVER CRASHES !!!");
+                            task.wait(1)
+                            Chat("THE SERVER WILL CRASH IN 5..");
+                            task.wait(1.5);
+                            Chat("THE SERVER WILL CRASH IN 4...");
+                            task.wait(1.5);
+                            Chat("THE SERVER WILL CRASH IN 3...");
+                            task.wait(1.5);
+                            Chat("THE SERVER WILL CRASH IN 2...");
+                            task.wait(1.5);
+                            Chat("THE SERVER WILL CRASH IN 1...");
+                            task.wait(1);
+
+	if #game:GetService("Teams").Guards:GetPlayers() < 8 then
+                SaveCameraPos()
+                diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+		workspace.Remote.TeamEvent:FireServer("Bright blue")
+	else
+        local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(823.65094, 97.9999161, 2245.10767, -0.999999464, -1.04425968e-10, 0.0010568779, 4.0250827e-11, 1, 1.36890719e-07, -0.0010568779, 1.36890691e-07, -0.999999464)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
+        end)
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("M9") or game.Players.LocalPlayer.Character:FindFirstChild("M9")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+        end
+    task.spawn(function()
+        local Events = {}
+        task.wait(1/10);
+        for i = 1, 100 do
+            local origin, destination = LocalPlayer.Character.HumanoidRootPart.Position, workspace:FindFirstChildOfClass("Part").Position;
+            local distance, ray = (origin-destination).Magnitude, Ray.new(origin, (destination-origin).unit*9e9)
+            local cf = CFrame.new(destination, origin) * CFrame.new(0, 0, -distance / 2);
+            Events[#Events+1] = {
+                Hit = v,
+                Cframe = cf,
+                Distance = distance,
+                RayObject = ray
+            }
+        end;
+        task.spawn(function()
+            while task.wait() do
+                if LocalPlayer.Character then
+                    pcall(function()
+                        local Gun = LocalPlayer.Backpack:FindFirstChild("M9") or LocalPlayer.Character:FindFirstChild("M9");
+                        if Gun then
+                            task.spawn(function()
+                            rStorage.ReloadEvent:FireServer(Gun);
+                            end)
+                            task.spawn(function()
+                            rStorage.ShootEvent:FireServer(Events, Gun);
+                            end)
+                        end
+                    end)
+                end;
+            end;
+        end);
+    end)
+        Notify("Success", "Crashing server...", 2);
+                        end;
+                    end;
+                end;
+            end;
+        end;
+    end;
+end)
+
 --// Loop tase:
 task.spawn(function()
     while task.wait(1/5) do
@@ -7272,7 +7444,7 @@ end);
 
 --// Team kill:
 task.spawn(function()
-    while task.wait(.2) do
+    while task.wait(.25) do
     local success, error = pcall(function()
         if States.KillAll then
             KillPlayers(Players);
@@ -7286,15 +7458,22 @@ task.spawn(function()
         if States.KillCriminals then
             KillPlayers(Teams.Criminals);
         end;
-        if States.TaseAll then
-            Tase(Players:GetPlayers());
-        end;
     end)
     
     if not success then
         print("An error occurred:", error)
     end
     end;
+end)
+
+--// Tase all:
+task.spawn(function()
+while task.wait(.6) do
+        if States.TaseAll then
+            task.wait(.6)
+            Tase(Players:GetPlayers());
+        end;
+end
 end)
 
 --// Team SpeedKill:
@@ -9880,7 +10059,7 @@ function NewCommand(Text)
     Command.BorderColor3 = Color3.fromRGB(27, 42, 53)
     Command.BorderSizePixel = 0
     Command.Position = UDim2.new(0, 0, 2.66529071e-07, 0)
-    Command.Size = UDim2.new(0, 225, 0, 25)
+    Command.Size = UDim2.new(0, 225, 0, 35)
     Command.Font = Enum.Font.Code
     Command.Text = Text
     Command.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -9894,7 +10073,8 @@ function NewCommand(Text)
 
     task.spawn(function()
         task.wait(1/20)
-        Command.Size = UDim2.new(0, 220, 0, math.max(25, Command.TextBounds.Y));
+        local textSizeY = Command.TextBounds.Y
+        Command.Size = UDim2.new(0, 225, 0, textSizeY + 10)
         MainGuiObjects.CommandsListFrame.CanvasSize = UDim2.new(0, 0, 0, MainGuiObjects.UIListLayout_7.AbsoluteContentSize.Y)
     end);
 end;
@@ -10117,6 +10297,16 @@ else
 print("User is on PC, loading Text2Emoji Converter")
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Text2Emoji/main/Main'))()
 end
+
+--// Anti AFK:
+local virtualuser = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:connect(function()
+   virtualuser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+   wait(1)
+   virtualuser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+   print("Player is idle")
+end)
+Notify("Anti-afk", "Anti-afk enabled")
 
 --// More ASA
 for i,v in pairs(workspace:FindFirstChild("Criminals Spawn"):GetChildren()) do
