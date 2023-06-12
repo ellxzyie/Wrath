@@ -17,7 +17,3 @@ Updates: Added more stuff (IDK)
 
 
 
---Beta testing stuff (Contains more than infinite bugs)
-
-
-loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/BetaScript.lua'))()
