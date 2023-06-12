@@ -12,7 +12,7 @@ Wrath admin modified roblox prison life script
  
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Script.lua'))()
 
-Updates: Adeed more stuff (IDK)
+Updates: Added more stuff (IDK)
 
 
 
