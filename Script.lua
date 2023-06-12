@@ -337,6 +337,7 @@ local Commands = {
     "antipunish / autoguard -- prevents you from being punished as guards";
     "keycard / key / card -- Pickup or obtain keycard";
     "carspawn / cars / spawncar / scar -- spawns a car to your location";
+    "policecarspawn / pcars / pcar -- spawns police car to your location";
     "carbring / carb / bringcar / bcar -- brings the nearest car to your location";
     "noclip -- allows you to walk through walls";
     "clip -- disables noclip";
@@ -418,6 +419,8 @@ local Commands = {
     "macdonalds / mac / mc -- spawns client sided macdonalds";
     "macdonalds2 / mac2 / mc2 -- spawns client sided mcdonalds2";
     "macdonalds3 / mac3 / mc2 -- spawns client sided mcdonalds3";
+    "amongus / amogus -- spawns super sussy client sided amogus map";
+    "area69 / area51 -- spawns client sided area51";
     "kitchen / kit [plr] -- teleports to kitchen"; 
     "cbr [plr] -- teleports to criminal base roof";
     "sewer / sew / swr [plr] -- teleport to sewer ";
@@ -1178,6 +1181,7 @@ local myChar = me.Character
 local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
 local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
 local prevPos = myRoot.CFrame
+local button = workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
 local car = nil
 task.spawn(function()
     car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
@@ -1192,7 +1196,46 @@ repeat task.wait()
             end
 		myRoot.CFrame = CFrame.new(-910, 95, 2157)
                 task.spawn(function()
-                local button = workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
+                workspace.Remote.ItemHandler:InvokeServer(button)
+                end)
+	end
+until car
+
+if car then
+        repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
+	car.PrimaryPart = car.RWD
+	repeat task.wait()
+		myRoot.CFrame = CFrame.new(car.Body.VehicleSeat.Position)
+		car.Body.VehicleSeat:Sit(myHuman)
+                car:SetPrimaryPartCFrame(prevPos)
+                print("debug_loop is running!")
+	until myHuman.Sit or not myHuman.Parent or not car.Parent
+	print("debug_carspawned!")
+end
+end
+
+function spawnpolicecars()
+local players = game:GetService("Players")
+local me = players.LocalPlayer
+local myChar = me.Character
+local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
+local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+local prevPos = myRoot.CFrame
+local button = workspace.Prison_ITEMS.buttons:GetChildren()[4]["Car Spawner"]
+local car = nil
+task.spawn(function()
+    car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
+end)
+
+repeat task.wait()
+	if not car then
+	    if myHuman.Sit then
+	    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game)
+            task.wait(.1)
+            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+            end
+		myRoot.CFrame = CFrame.new(624.183838, 98.4030228, 2494.59717, -0.99913305, -3.2890636e-08, -0.0416304432, -3.23544995e-08, 1, -1.35522082e-08, 0.0416304432, -1.21935271e-08, -0.99913305)
+                task.spawn(function()
                 workspace.Remote.ItemHandler:InvokeServer(button)
                 end)
 	end
@@ -1278,7 +1321,7 @@ end
 local omagadbruh = false
 function Kill(PLAYERS)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
-    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
+    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.AutoGivingGuns then
         if game.Players.LocalPlayer.Character.Humanoid.Sit then
 	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
@@ -1477,6 +1520,7 @@ function Teleport(Player, Position)
            task.wait(.1)
            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
         end
+        local carbutton = workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
 	local Character = Player and Player.Character
 	local Humanoid1 = Character and Character:FindFirstChildOfClass("Humanoid")
 	local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
@@ -1511,9 +1555,12 @@ function Teleport(Player, Position)
                                             game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
                                         end
 					HumanoidRootPart.CFrame = CFrame.new(-910, 95, 2157)
-					workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
+                                        task.spawn(function()
+					workspace.Remote.ItemHandler:InvokeServer(carbutton)
+                                        end)
 				end
-			until Car or tick() - Tick1 >= 0
+			until Car
+                        repeat task.wait() until Car:FindFirstChild("RWD") and Car:FindFirstChild("Body") and Car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
 			HumanoidRootPart.CFrame = LastPosition
 			if Car and Humanoid and HumanoidRootPart and Torso and Humanoid1 then
 				Car.PrimaryPart = Car.RWD
@@ -1805,7 +1852,7 @@ end;
 
 function KillPlayers(TEAM, Whitelist)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
-    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
+    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.AutoGivingGuns then
         if game.Players.LocalPlayer.Character.Humanoid.Sit then
 	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
@@ -4261,6 +4308,10 @@ end
         spawncars()
         Notify("Success", "Spawned a car to your location.", 2);
     end;
+    if CMD("policecarspawn") or CMD("pcars") or CMD("pcar") then
+       spawnpolicecars()
+       Notify("Success", "Spawned a police car to your location.", 2);
+    end;
     if CMD("carbring") or CMD("bringcar") or CMD("bcar") or CMD("carb") then
         bringcars()
         Notify("Success", "Brought a car to your location.", 2);
@@ -5589,7 +5640,7 @@ end
         Notify("Success", "Teleported to Mcdonalds3");
         end
     end; 
-    if CMD("macdonalds") or CMD("mcdonalds2") or CMD("mc") or CMD("mac") then
+    if CMD("macdonalds") or CMD("mcdonalds") or CMD("mc") or CMD("mac") then
         if not myarguments.has_spawnedmcdonalds then
         myarguments.has_spawnedmcdonalds = true
         Notify("Loading", "Please wait...", 2);
@@ -5600,10 +5651,32 @@ end
         Notify("Success", "Teleported to mcdonalds", 2);
         end
     end;
+    if CMD("sussy") or CMD("amongus") or CMD("amogus") then
+        if not myarguments.has_spawnedsussybaka then
+        myarguments.has_spawnedsussybaka = true
+        Notify("Loading", "Please wait...", 5);
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/AmongSUS_Map.lua'))()
+        Notify("Success", "Spawned amogus map", 2);
+        else
+        game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-6293.349, 1013.466, 222.278))
+        Notify("Success", "Teleported to amogus", 2);
+        end
+    end;
+    if CMD("area69") or CMD("area51") then
+        if not myarguments.has_spawnedarea69 then
+        myarguments.has_spawnedarea69 = true
+        Notify("Loading", "Please wait...", 5);
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/Area69.lua'))()
+        Notify("Success", "Spawned area51", 2);
+        else 
+        game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-6460.572, 1544.028, 294.289))
+        Notify("Success", "Teleported to area51", 2);
+        end
+    end;
     if CMD("ad") or CMD("advertise") or CMD("script") or CMD("flex") or CMD("link") then
-        Chat("Bible admin is better than your garbage triggered admin! (Tiger admin) Get bible admin today at justpaste.it/a81yt");
+        Chat("LocalPlayer:kick() admin is better than your garbage triggered admin! (Tiger admin) Get LocalPlayer:kick() admin today at justpaste.it/a81yt");
         Chat("If the link above is not available, try alternate link to the script: rentry.co/keww4");
-        AddLog("Success", "Totally real script ong!");
+        Notify("Real", "Totally real script omg!");
     end;
     if CMD("nspawn") then
         local Player = GetPlayer(Args[2], LocalPlayer);
