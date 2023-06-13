@@ -1181,7 +1181,7 @@ local myChar = me.Character
 local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
 local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
 local prevPos = myRoot.CFrame
-local button = workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
+local button = workspace.Prison_ITEMS.buttons["Car Spawner"]["Car Spawner"]
 local car = nil
 task.spawn(function()
     car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
@@ -1194,7 +1194,7 @@ repeat task.wait()
             task.wait(.1)
             game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
             end
-		myRoot.CFrame = CFrame.new(-910, 95, 2157)
+		myRoot.CFrame = CFrame.new(-190.722427, 54.774929, 1880.20374, 0.007893865, 6.46408438e-08, 0.999968827, -3.42371038e-08, 1, -6.43725926e-08, -0.999968827, -3.37278863e-08, 0.007893865)
                 task.spawn(function()
                 workspace.Remote.ItemHandler:InvokeServer(button)
                 end)
@@ -1520,7 +1520,7 @@ function Teleport(Player, Position)
            task.wait(.1)
            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
         end
-        local carbutton = workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
+        local carbutton = workspace.Prison_ITEMS.buttons["Car Spawner"]["Car Spawner"]
 	local Character = Player and Player.Character
 	local Humanoid1 = Character and Character:FindFirstChildOfClass("Humanoid")
 	local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
@@ -1554,7 +1554,7 @@ function Teleport(Player, Position)
                                             task.wait(.1)
                                             game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
                                         end
-					HumanoidRootPart.CFrame = CFrame.new(-910, 95, 2157)
+					HumanoidRootPart.CFrame = CFrame.new(-190.722427, 54.774929, 1880.20374, 0.007893865, 6.46408438e-08, 0.999968827, -3.42371038e-08, 1, -6.43725926e-08, -0.999968827, -3.37278863e-08, 0.007893865)
                                         task.spawn(function()
 					workspace.Remote.ItemHandler:InvokeServer(carbutton)
                                         end)
