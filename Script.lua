@@ -404,7 +404,7 @@ local Commands = {
     "nowalls -- removes walls";
     "=== BRING/TELEPORT COMMANDS ===";
     "goto / to [plr] -- teleports you to plr";
-    "bring [plr] -- teleports plr to you [Patched]";
+    "bring [plr] -- teleports plr to you [Using cars]";
     "lb / loopbring [plr,all] -- loop brings plr/all to you";
     "nexus / nex [plr] -- teleports plr to nexus";
     "yard / yar [plr] -- teleports plr to yard";
@@ -420,6 +420,7 @@ local Commands = {
     "macdonalds3 / mac3 / mc3 -- spawns client sided mcdonalds3";
     "amongus / amogus -- spawns super sussy client sided amogus map";
     "area69 / area51 -- spawns client sided area51";
+    "internetcafe / incafe -- spawns client sided internet cafe";
     "kitchen / kit [plr] -- teleports to kitchen"; 
     "cbr [plr] -- teleports to criminal base roof";
     "sewer / sew / swr [plr] -- teleport to sewer ";
@@ -471,6 +472,15 @@ local Commands = {
     "=== GUI COMMANDS ===";
     "gui / guis -- toggle gui";
     "bindgui / guikeybind [keycode] (eg. 'G' or 'LeftAlt' or 'One') -- keybind for gui";
+    "=== CUSTOM SKY ===";
+    "sky -- resets sky back to default roblox sky";
+    "sky1 -- loads custom sky 1";
+    "sky2 -- loads custom sky 2";
+    "sky3 -- loads custom sky 3";
+    "sky4 -- loads custom sky 4";
+    "sky_minecraft -- loads minecraft sky";
+    "sky_mountains -- loads mountains sky";
+    "sky_fortnite -- loads fortnite sky";
 }
 
 local CustomColors = {
@@ -3084,6 +3094,131 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
         else
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
+    end;
+    if CMD("sky") then
+        game:GetService("Lighting"):GetChildren()[2]:destroy()
+        workspace.Bloom:destroy()
+        workspace.Blur:destroy()
+        workspace.ColorCorrection:destroy()
+        workspace.SunRays:destroy()
+        Notify("Success", "Resetted to default sky", 2);
+    end;
+    if CMD("sky1") then
+local Sky = Instance.new("Sky")
+Sky.SkyboxUp = "http://www.roblox.com/asset/?id=144931564"
+Sky.SkyboxLf = "http://www.roblox.com/asset/?id=144933244"
+Sky.SkyboxBk = "http://www.roblox.com/asset/?id=144933338"
+Sky.SkyboxFt = "http://www.roblox.com/asset/?id=144933262"
+Sky.StarCount = 1500
+Sky.SkyboxDn = "http://www.roblox.com/asset/?id=144931530"
+Sky.SunAngularSize = 5
+Sky.SkyboxRt = "http://www.roblox.com/asset/?id=144933299"
+
+Sky.Parent = game:GetService("Lighting")
+        Notify("Success", "Loaded sky1", 2);
+    end;
+    if CMD("sky2") then
+local RealisticSky = Instance.new("Sky")
+RealisticSky.Name = "Realistic Sky"
+RealisticSky.SkyboxUp = "http://www.roblox.com/asset/?id=150335642"
+RealisticSky.SkyboxLf = "http://www.roblox.com/asset/?id=150335620"
+RealisticSky.SkyboxBk = "http://www.roblox.com/asset/?id=150335574"
+RealisticSky.SkyboxFt = "http://www.roblox.com/asset/?id=150335628"
+RealisticSky.StarCount = 1334
+RealisticSky.SkyboxDn = "http://www.roblox.com/asset/?id=150335585"
+RealisticSky.SkyboxRt = "http://www.roblox.com/asset/?id=150335610"
+
+RealisticSky.Parent = game:GetService("Lighting")
+local Bloom = Instance.new("BloomEffect")
+Bloom.Intensity = 1
+Bloom.Threshold = 0.8
+Bloom.Size = 56
+
+Bloom.Parent = workspace
+local Blur = Instance.new("BlurEffect")
+Blur.Enabled = false
+
+Blur.Parent = workspace
+local ColorCorrection = Instance.new("ColorCorrectionEffect")
+
+ColorCorrection.Parent = workspace
+local SunRays = Instance.new("SunRaysEffect")
+
+SunRays.Parent = workspace
+        Notify("Success", "Loaded sky2", 2);
+    end;
+    if CMD("sky3") then
+local Sky = Instance.new("Sky")
+Sky.SkyboxUp = "rbxassetid://1084532776"
+Sky.MoonTextureId = "rbxassetid://1075087760"
+Sky.SkyboxLf = "rbxassetid://1084532285"
+Sky.SkyboxBk = "rbxassetid://1084532042"
+Sky.SkyboxFt = "rbxassetid://1084532530"
+Sky.CelestialBodiesShown = false
+Sky.StarCount = 500
+Sky.SkyboxDn = "rbxassetid://1084533114"
+Sky.SunTextureId = "rbxassetid://1084351190"
+Sky.SunAngularSize = 12
+Sky.SkyboxRt = "rbxassetid://1084531839"
+Sky.MoonAngularSize = 1.5
+
+Sky.Parent = game:GetService("Lighting")
+        Notify("Success", "Loaded sky3", 2);
+    end;
+    if CMD("sky4") then
+local Sky = Instance.new("Sky")
+Sky.SkyboxUp = "http://www.roblox.com/asset/?version=1&id=135483475"
+Sky.SkyboxLf = "http://www.roblox.com/asset/?version=1&id=135483495"
+Sky.SkyboxBk = "http://www.roblox.com/asset/?version=1&id=135483466"
+Sky.SkyboxFt = "http://www.roblox.com/asset/?version=1&id=135483461"
+Sky.StarCount = 2500
+Sky.SkyboxDn = "http://www.roblox.com/asset/?version=1&id=135483484"
+Sky.SkyboxRt = "http://www.roblox.com/asset/?version=1&id=135483499"
+
+Sky.Parent = game:GetService("Lighting")
+        Notify("Success", "Loaded sky4", 2);
+    end;
+    if CMD("sky_minecraft") then
+local Sky = Instance.new("Sky")
+Sky.SkyboxUp = "http://www.roblox.com/asset/?id=3822392413"
+Sky.MoonTextureId = "rbxassetid://1176450669"
+Sky.SkyboxLf = "http://www.roblox.com/asset/?id=3822391866"
+Sky.SkyboxBk = "http://www.roblox.com/asset/?id=3822390508"
+Sky.SkyboxFt = "http://www.roblox.com/asset/?id=3822391392"
+Sky.StarCount = 0
+Sky.SkyboxDn = "http://www.roblox.com/asset/?id=3822392871"
+Sky.SunTextureId = "rbxassetid://55054494"
+Sky.SunAngularSize = 10
+Sky.SkyboxRt = "http://www.roblox.com/asset/?id=3822390968"
+Sky.MoonAngularSize = 9
+
+Sky.Parent = game:GetService("Lighting")
+        Notify("Success", "Loaded minecraft sky", 2);
+    end;
+    if CMD("sky_mountains") then
+local Sky = Instance.new("Sky")
+Sky.SkyboxUp = "http://www.roblox.com/asset/?id=324015409"
+Sky.SkyboxLf = "http://www.roblox.com/asset/?id=324014679"
+Sky.SkyboxBk = "http://www.roblox.com/asset/?id=324014980"
+Sky.SkyboxFt = "http://www.roblox.com/asset/?id=324014995"
+Sky.SkyboxDn = "http://www.roblox.com/asset/?id=324015477"
+Sky.SkyboxRt = "http://www.roblox.com/asset/?id=324015013"
+
+Sky.Parent = game:GetService("Lighting")
+        Notify("Success", "Loaded mountains sky", 2);
+    end;
+    if CMD("sky_fortnite") then
+local Sky = Instance.new("Sky")
+Sky.SkyboxUp = "http://www.roblox.com/asset/?id=570557727"
+Sky.SkyboxLf = "http://www.roblox.com/asset/?id=570557620"
+Sky.SkyboxBk = "http://www.roblox.com/asset/?id=570557514"
+Sky.SkyboxFt = "http://www.roblox.com/asset/?id=570557559"
+Sky.CelestialBodiesShown = false
+Sky.SkyboxDn = "http://www.roblox.com/asset/?id=570557775"
+Sky.SkyboxRt = "http://www.roblox.com/asset/?id=570557672"
+
+Sky.Parent = game:GetService("Lighting")
+        Notify("Success", "Loaded fortnite sky", 2);
     end;
     if CMD("narrowspot") or CMD("ns") then
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-347.5849, 54.1742592, 1835.85608, 0.608338475, 2.53569148e-08, -0.793677747, -1.48728141e-08, 1, 2.05489084e-08, 0.793677747, -6.96470048e-10, 0.608338475)
@@ -5725,6 +5860,17 @@ end
         else 
         game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-6460.572, 1544.028, 294.289))
         Notify("Success", "Teleported to area51", 2);
+        end
+    end;
+    if CMD("internetcafe") or CMD("incafe") then
+        if not myarguments.has_spawnedinternetcafe then
+        myarguments.has_spawnedinternetcafe = true
+        Notify("Loading", "Please wait...", 5);
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/InternetCafe.lua'))()
+        Notify("Success", "Spawned internet cafe", 2);
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(414.569733, 15.3418102, 1399.30969, 0.999996662, 9.53135526e-08, -0.00258721341, -9.52223829e-08, 1, 3.53629588e-08, 0.00258721341, -3.51164786e-08, 0.999996662)
+        Notify("Success", "Teleported to internet cafe", 2);
         end
     end;
     if CMD("ad") or CMD("advertise") or CMD("script") or CMD("flex") or CMD("link") then
