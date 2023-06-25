@@ -313,8 +313,8 @@ local Commands = {
     "asettings / as -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds] [true, cmd enabled / false, cmd disabled]";
     "getas / getadminsettings -- gets all current configuration settings for ranked players";
     "=== PROTECTION/WHITELIST COMMANDS ===";
-    "p / protect [plr] -- protects a player";
-    "up / unprotect [plr] -- revokes a player's protection";
+    "p / protect / whitelist [plr] -- protects a player";
+    "up / unprotect / unwhitelist [plr] -- revokes a player's protection";
     "clp / clearprotected -- revokes every protected player";
     "getp / getprotected -- view all protected";
     "psettings / ps -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds/karma] [true, immune / false, not immune]";
@@ -337,8 +337,9 @@ local Commands = {
     "antipunish / autoguard -- prevents you from being punished as guards";
     "keycard / key / card -- Pickup or obtain keycard";
     "carspawn / cars / spawncar / scar -- spawns a car to your location";
-    "policecarspawn / pcars / pcar -- spawns police car to your location";
-    "carbring / carb / bringcar / bcar -- brings the nearest car to your location";
+    "carsto / scarto [plr] -- spawns a car to the players location";
+    "pcars / pcar -- spawns police car to your location";
+    "carbring / carb / bcar -- brings the nearest car to your location";
     "noclip -- allows you to walk through walls";
     "clip -- disables noclip";
     "ff / forcefield -- enables forcefield";
@@ -358,9 +359,7 @@ local Commands = {
     "geta / getarmorspammers -- (gets armor spammers)";
     "fps / antilag / boost -- Make game FPS faster (Depends on your computer on how much faster it'll be, but nonetheless it will work!)";
     "crim / cr [plr] -- turns plr into criminal";
-    "team / t [color / guards / inmates / criminals / rgb] -- change team";
-    "rgb -- turns rainbow team on";
-    "unrgb -- turns rainbow team off";
+    "team / t [guards / inmates / criminals] -- changes team";
     "rejoin / rj -- makes you rejoin the server";
     "auto -- YOU CANT TURN OFF AUTO RESPAWN (BECAUSE BUGS)";
     "view [plr] -- view plr";
@@ -418,7 +417,7 @@ local Commands = {
     "1v1 [plr] -- teleports to 1v1 place";
     "macdonalds / mac / mc -- spawns client sided macdonalds";
     "macdonalds2 / mac2 / mc2 -- spawns client sided mcdonalds2";
-    "macdonalds3 / mac3 / mc2 -- spawns client sided mcdonalds3";
+    "macdonalds3 / mac3 / mc3 -- spawns client sided mcdonalds3";
     "amongus / amogus -- spawns super sussy client sided amogus map";
     "area69 / area51 -- spawns client sided area51";
     "kitchen / kit [plr] -- teleports to kitchen"; 
@@ -1212,6 +1211,50 @@ if car then
 	until myHuman.Sit or not myHuman.Parent or not car.Parent
 	print("debug_carspawned!")
 end
+end
+
+function spawncarsto(Player)
+local players = game:GetService("Players")
+local me = players.LocalPlayer
+local myChar = me.Character
+local myHuman = myChar and myChar:FindFirstChildOfClass("Humanoid")
+local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+local prevPos = myRoot.CFrame
+local cframe = Player.Character:FindFirstChild("HumanoidRootPart").CFrame
+local button = workspace.Prison_ITEMS.buttons["Car Spawner"]["Car Spawner"]
+local car = nil
+task.spawn(function()
+    car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
+end)
+
+repeat task.wait()
+	if not car then
+	    if myHuman.Sit then
+	    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game)
+            task.wait(.1)
+            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+            end
+		myRoot.CFrame = CFrame.new(-190.722427, 54.774929, 1880.20374, 0.007893865, 6.46408438e-08, 0.999968827, -3.42371038e-08, 1, -6.43725926e-08, -0.999968827, -3.37278863e-08, 0.007893865)
+                task.spawn(function()
+                workspace.Remote.ItemHandler:InvokeServer(button)
+                end)
+	end
+until car
+
+if car then
+    repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
+	car.PrimaryPart = car.RWD
+	task.wait(.2)
+	myRoot.CFrame = prevPos
+	car:SetPrimaryPartCFrame(cframe)
+	--myRoot.CFrame = CFrame.new(car.Body.VehicleSeat.Position)
+    for i = 1, 400 do
+    task.wait()
+    car:SetPrimaryPartCFrame(cframe)
+    end
+    print("debug_carspawned!")
+end
+
 end
 
 function spawnpolicecars()
@@ -3981,7 +4024,7 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
         ChangeGuiToggle(States.AntiPunch, "Anti-Punch");
         ChangeGuiToggle(States.AntiCrash, "Anti-Crash");
     end;
-    if CMD("protect") or CMD("p") then
+    if CMD("protect") or CMD("whitelist") or CMD("p") then
         local Player = GetPlayer(Args[2], LocalPlayer);
         if Player then
             Protected[Player.UserId] = Player;
@@ -4308,7 +4351,18 @@ end
         spawncars()
         Notify("Success", "Spawned a car to your location.", 2);
     end;
-    if CMD("policecarspawn") or CMD("pcars") or CMD("pcar") then
+    if CMD("carsto") or CMD("spawncarsto") or CMD("scarto") then
+        local Player = GetPlayer(Args[2], LocalPlayer)
+        if Player then
+            pcall(function()
+            spawncarsto(Player)
+            end)
+            Notify("Success", "Spawned a car to " .. Player.Name .. "'s Location.", 2);
+        else
+            Notify("Error", Args[2] .. " is not a valid player.", 2);
+        end;
+    end; 
+    if CMD("policecarspawn") or CMD("policecar") or CMD("pcars") or CMD("pcar") then
        spawnpolicecars()
        Notify("Success", "Spawned a police car to your location.", 2);
     end;
@@ -4421,7 +4475,7 @@ end
             end;
         end;
     end;
-    if CMD("revokecmds") or CMD("uncmds") then
+    if CMD("revokecmds") or CMD("uncmds") or CMD("rcmds") or CMD("revcmds") then
         if Args[2] == "all" then
             Admins = {}
             Chat("!!! Everyone's command has been revoked. !!!");
@@ -6254,17 +6308,11 @@ function UseRankedCommands(MESSAGE, Admin)
             NotAValidPlayer("unlk");
         end;
     end;
-    if CMD2("cars") or CMD2("car") or CMD2("carspawn") then
+    if CMD2("cars") or CMD2("car") or CMD2("carspawn") or CMD2("scar") or CMD2("spawncars") then
        local Player = GetPlayer(Args[2], Admin);
-       local gotoplayer = Player.Character:GetPrimaryPartCFrame()
-       SavePos()
-       game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = gotoplayer
-       spawncars()
-       task.wait(1)
-       game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game)
-       task.wait(.1)
-       game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
-       LoadPos()
+       pcall(function()
+       spawncarsto(Player)
+       end)
        Chat("/w " .. Admin.Name .. " Success! Brought a car to your location");
     end;
     if CMD2("arrest") then
@@ -7077,7 +7125,7 @@ end);
 
 --// Loopkills:
 task.spawn(function()
-    while task.wait(.1) do
+    while task.wait() do
     local success, error = pcall(function()
         if next(Loopkilling) then
             local LKPlayers = {};
