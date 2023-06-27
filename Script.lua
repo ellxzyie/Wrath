@@ -275,6 +275,7 @@ local Commands = {
     "getk / getkillauras -- gets all players that have a kill aura";
     "getlt / getlooptase -- gets all players that are being loop tased";
     "getmlk / getmeleeloopkill -- gets all players that are being melee loop killed";
+    "sword / stick -- client sided stick that kills players";
     "=== ARREST/TAZE COMMANDS ===";
     "antiarrest / aar -- makes you still move even when arrested";
     "sa [plr] -- spam arrest plr";
@@ -418,6 +419,8 @@ local Commands = {
     "macdonalds / mac / mc -- spawns client sided macdonalds";
     "macdonalds2 / mac2 / mc2 -- spawns client sided mcdonalds2";
     "macdonalds3 / mac3 / mc3 -- spawns client sided mcdonalds3";
+    "macdonalds4 / mac4 / mc4 -- spawns client sided mcdonalds4";
+    "piggymall -- spawns client sided piggy mall"; 
     "amongus / amogus -- spawns super sussy client sided amogus map";
     "area69 / area51 -- spawns client sided area51";
     "internetcafe / incafe -- spawns client sided internet cafe";
@@ -3085,6 +3088,53 @@ script.Parent.MouseButton1Click:Connect(deleteGUI)
     if CMD("fatesadmin") or CMD("fa") or CMD("fates") then
         loadstring(game:HttpGet("https://raw.githubusercontent.com/fatesc/fates-admin/main/main.lua"))();
         Notify("Success", "Loaded Fates Admin.");
+    end;
+    if CMD("sword") or CMD("stick") then
+local plr = game.Players.LocalPlayer
+local tool = Instance.new("Tool", plr.Backpack)
+tool.GripPos = Vector3.new(0.1, -1, 0)
+tool.Name = "Sword"
+
+local handle = Instance.new("Part", tool)
+handle.Name = "Handle"
+handle.Size = Vector3.new(0.4, 4, 0.4)
+
+local animation = Instance.new("Animation", tool)
+animation.AnimationId = "rbxassetid://218504594"
+
+local animationTrack = plr.Character.Humanoid:LoadAnimation(animation)
+
+local canPlayAnimation = true
+local isAttacking = false
+
+tool.Equipped:Connect(function()
+    tool.Activated:Connect(function()
+        if canPlayAnimation then
+            canPlayAnimation = false
+            animationTrack:Play()
+            wait()
+            isAttacking = true
+            canPlayAnimation = true
+            wait(0.1)
+            isAttacking = false
+        end
+    end)
+end)
+
+handle.Touched:Connect(function(part)
+    if isAttacking then
+        local humanoid = part.Parent:FindFirstChild("Humanoid")
+        if humanoid ~= nil then
+            local player = game.Players:FindFirstChild(part.Parent.Name)
+            for i = 1, 10 do
+                if player.Name ~= "lololol2737" then
+                    game.ReplicatedStorage.meleeEvent:FireServer(player)
+                end
+            end
+        end
+    end
+end)
+        Notify("Success", "Obtained FE stick", 2);
     end;
     if CMD("nexus") or CMD("nex") then
         local Player = GetPlayer(Args[2], LocalPlayer)
@@ -5829,6 +5879,17 @@ end
         Notify("Success", "Teleported to Mcdonalds3");
         end
     end; 
+    if CMD("macdonalds4") or CMD("mcdonalds4") or CMD("mc4") or CMD("mac4") then
+        if not myarguments.has_spawnedmcdonalds4 then
+        myarguments.has_spawnedmcdonalds4 = true
+        Notify("Loading", "Please wait...", 5);
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/Mcdonalds4.lua'))()
+        Notify("Success", "Spawned mcdonalds4", 2);
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-349.4, 8.78, -422.8)
+        Notify("Success", "Teleported to mcdonalds4", 2);
+        end
+    end;
     if CMD("macdonalds") or CMD("mcdonalds") or CMD("mc") or CMD("mac") then
         if not myarguments.has_spawnedmcdonalds then
         myarguments.has_spawnedmcdonalds = true
@@ -5871,6 +5932,17 @@ end
         else
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(414.569733, 15.3418102, 1399.30969, 0.999996662, 9.53135526e-08, -0.00258721341, -9.52223829e-08, 1, 3.53629588e-08, 0.00258721341, -3.51164786e-08, 0.999996662)
         Notify("Success", "Teleported to internet cafe", 2);
+        end
+    end;
+    if CMD("piggymall") then
+        if not myarguments.has_spawnedpiggymall then
+        myarguments.has_spawnedpiggymall = true
+        Notify("Loading", "Please wait...", 5);
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/PiggyMall.lua'))()
+        Notify("Success", "Spawned piggy mall", 2);
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-424.676, 289.201, -231.4)
+        Notify("Success", "Teleported to piggy mall", 2);
         end
     end;
     if CMD("ad") or CMD("advertise") or CMD("script") or CMD("flex") or CMD("link") then
