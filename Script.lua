@@ -421,6 +421,7 @@ local Commands = {
     "macdonalds3 / mac3 / mc3 -- spawns client sided mcdonalds3";
     "macdonalds4 / mac4 / mc4 -- spawns client sided mcdonalds4";
     "piggymall -- spawns client sided piggy mall"; 
+    "manginasal -- spawns client sided mang inasal restaurant (filipino restaurant)";
     "amongus / amogus -- spawns super sussy client sided amogus map";
     "area69 / area51 -- spawns client sided area51";
     "internetcafe / incafe -- spawns client sided internet cafe";
@@ -1107,6 +1108,7 @@ local function characterAdded()
         LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = myarguments.oldposition1
         end
         if not hasAlreadyDied and not isChangingTeamToInmates and player.TeamColor == BrickColor.new("Bright orange") and oldTeamIsCriminals and States.AntiArrest then
+        task.spawn(function() task.wait(.3)
         local crimspawnpoint
         repeat
         task.wait()
@@ -1117,6 +1119,7 @@ local function characterAdded()
         local newPosition = CFrame.new(Vector3.new(10, 100, 10))
         object.CFrame = newPosition
         oldTeamIsCriminals = false
+        end)
         end
         hasAlreadyDied = false
         if hasDiedasCriminals then
@@ -2671,6 +2674,37 @@ end
         States.AntiArrest = not States.AntiArrest
         if States.AntiArrest then
         Notify("Success", "Enabled antiarrest", 2);
+        task.spawn(function()
+while States.AntiArrest do
+task.spawn(function()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local distanceThreshold = 20
+
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        local character = player.Character
+        if character then
+            local rootPart = character.PrimaryPart
+            if rootPart then
+                local distance = (rootPart.Position - LocalPlayer.Character.PrimaryPart.Position).Magnitude
+                if distance <= distanceThreshold then
+                    local handcuffs = character:FindFirstChild("Handcuffs")
+                    if handcuffs then
+                        task.spawn(function()
+                        MeleeEvent(player)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end
+end)
+task.wait()
+end 
+        end)
         while States.AntiArrest do
             if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.FriendlyFire then
             SaveCameraPos()
@@ -5901,6 +5935,17 @@ end
         Notify("Success", "Teleported to mcdonalds", 2);
         end
     end;
+    if CMD("manginasal") then
+        if not myarguments.has_spawnedmanginasal then
+        myarguments.has_spawnedmanginasal = true
+        Notify("Loading", "Please wait...", 5);
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Wrath/main/Models/MangInasal.lua'))()
+        Notify("Success", "Spawned mang inasal", 2);
+        else
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(313, 591.438, -700)
+        Notify("Success", "Teleported to mang inasal")
+        end
+    end;
     if CMD("sussy") or CMD("amongus") or CMD("amogus") then
         if not myarguments.has_spawnedsussybaka then
         myarguments.has_spawnedsussybaka = true
@@ -8049,7 +8094,7 @@ end)
 
 --// Anti Void:
 task.spawn(function()
-    while task.wait(0.03) do
+    while task.wait() do
         if LocalPlayer.Character and States.AntiVoid then
             if LocalPlayer.Character.PrimaryPart then
                 if LocalPlayer.Character.PrimaryPart.Position.Y < 1 then
