@@ -80,6 +80,13 @@ local States = {
 
 --// MyArguments:
 local myarguments = {};
+local mynumbers = {};
+local mysaved = {};
+local hostileanimationIds = {
+    "rbxassetid://484200742",
+    "rbxassetid://484926359",
+    "rbxassetid://275012308"
+}
 
 --// AimLock:
 task.spawn(function()
@@ -244,18 +251,19 @@ local Commands = {
     "The default prefix is '.' ";
     "output -- shows the output";
     "=== KILL COMMANDS ===";
-    "kill [plr,guards,inmates,criminals] -- kills a player, team, or all";
+    "kill [plr,team,hostiles] -- kills a player, team, hostiles, or all";
     "mkill / meleekill [plr] -- melee kill player or all";
-    "lk / loopkill [plr,team] -- loopkills plr/team/all";
-    "unlk / unloopkill [plr,team] -- stops loopkill";
+    "lk / loopkill [plr,team,hostiles] -- loopkills plr/team/all/hostiles";
+    "INFO: what is hostiles? hostiles is when a player holds any type of dangerous weapons and kill the player (also handcuffs because why not)";
+    "unlk / unloopkill [plr,team,hostiles] -- stops loopkill";
     "mlk / meleeloopkill [plr,all] -- melee loopkil plr/all";
     "unmlk /unmeleeloopkill [plr,all] -- unmelee loopkill plr/all";
     "nuke / kamikaze [plr] -- if player dies, everyone dies";
     "supernuke / snuke [plr] -- if player dies, SERVER CRASHES!";
     "unsupernuke / unsnuke [plr] -- remove supernuke from plr";
     "defuse / unnuke [plr] -- removes nuke from plr";
-    "aura / ka [plr] -- kill aura plr or all";
-    "unka / unaura [plr] -- removes kill aura from player or all";
+    "killaura / aura / ka [plr,team,all] -- kill aura plr, team or all";
+    "unka / unaura / unkillaura [plr,all] -- removes kill aura from player or all";
     "virus / infect [plr, team] -- gives virus to a player/team (touch kill)";
     "rvirus / unvirus [plr, all] -- remove virus from player";
     "sp / spampunch -- toggles spam punch (your punches will be really fast if you hold down F)";
@@ -296,8 +304,12 @@ local Commands = {
     "m4a1 / m4 -- gives you m4a1 (Gamepass only)";
     "hammer / ham -- gives you hammer (Obviously)";
     "knife / knive -- gives you knife (Obviously)";
+    "riotshield / shield -- gives you riot shield (Gamepass and guards only)";
     "aguns -- auto give gun";
     "unaguns -- stop auto give gun";
+    "autoitems / autoi / aitems -- auto give all prison life items";
+    "unautoitems / unautoi / unaitems -- stops auto give all items";
+    "items / allitems -- gives all items";
     "gun / guns -- gives guns (one time)";
     "af / autofire -- disables semi auto guns (m9) || taser isn't affected :(";
     "aaf / autoaf -- automatically enables autofire every time you respawn";
@@ -321,6 +333,7 @@ local Commands = {
     "psettings / ps -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds/karma] [true, immune / false, not immune]";
     "getps / getprotectedsettings -- gets all current configuration settings for protected players";
     "=== MISC ===";
+    "antishield / removeshield -- automatically deletes shield from other players";
     "breaktigeradmin / bta -- execute if any tiger admin user is looping you";
     "refresh / ref / re -- Refresh character";
     "reset / res -- Reset character";
@@ -333,6 +346,7 @@ local Commands = {
     "antiarrest -- Prevents you from being arrested and spawns you back to old position";
     "hipheight / height [Number] -- Changes your hipheight or makes you float";
     "speed / walkspeed [Number] -- Changes walkspeed";
+    "jumppower / jump -- Changes how high you jump";
     "forcefield / ff -- forcefield, obviously";
     "loopopendoors / loopdoors -- Loops open every doors";
     "antipunish / autoguard -- prevents you from being punished as guards";
@@ -781,6 +795,100 @@ function GiveGuns()
     end;
 end;
 
+function GiveAllItems()
+local SavedPosition = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame
+GiveGuns()
+	local client = game.Players.LocalPlayer
+	local char = client.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	local single = workspace.Prison_ITEMS.single
+	local object = single:FindFirstChild("Key card")
+	if workspace.Prison_ITEMS.single:FindFirstChild("Key card") then
+		root.CFrame = object:GetPivot()
+		repeat
+			ItemHandler(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP);
+			task.wait()
+		until client.Backpack:FindFirstChild("Key card")
+        end
+        if LocalPlayer.TeamColor ~= BrickColor.new("Bright blue") then
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(774.635742, 98.1899185, 2523.05762, 0.104013823, 8.12612377e-09, 0.994575858, -1.92118872e-08, 1, -6.16124174e-09, -0.994575858, -1.84668245e-08, 0.104013823)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.single["Hammer"].ITEMPICKUP);
+        end)
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("Hammer")
+        repeat
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(786.09967, 98.1877518, 2386.16528, -0.572712839, -1.94576568e-08, -0.819756091, 4.30706315e-09, 1, -2.67449884e-08, 0.819756091, -1.88479383e-08, -0.572712839)
+        ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        task.wait(.1)
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
+        ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
+        else
+        print("Player is on guards team, ignoring give hammer and knife")
+        end
+pcall(function()
+local Dinner = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Dinner")
+local Breakfast = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Breakfast")
+local Lunch = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Lunch")
+if Dinner or Breakfast or Lunch then
+repeat task.wait()
+task.spawn(function()
+if Dinner then
+game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(910.673523, 99.9899368, 2247.09033, 0.999266565, 1.21980905e-08, -0.0382928811, -1.2718445e-08, 1, -1.33452014e-08, 0.0382928811, 1.38224392e-08, 0.999266565)
+local args = {
+    [1] = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver"):WaitForChild("Dinner"):WaitForChild("ITEMPICKUP")
+}
+
+workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"):InvokeServer(unpack(args))
+end
+if Breakfast then
+game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(910.162109, 99.9899368, 2246.86987, 0.988961577, -4.27984723e-08, 0.148172304, 5.56260282e-08, 1, -8.24278956e-08, -0.148172304, 8.97602561e-08, 0.988961577)
+local args = {
+    [1] = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver"):WaitForChild("Breakfast"):WaitForChild("ITEMPICKUP")
+}
+
+workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"):InvokeServer(unpack(args))
+end
+if Lunch then
+game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(894.200867, 99.9899368, 2245.92969, 0.999898911, -4.37882974e-08, 0.0142196361, 4.279104e-08, 1, 7.04365917e-08, -0.0142196361, -6.98209988e-08, 0.999898911)
+local args = {
+    [1] = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver"):WaitForChild("Lunch"):WaitForChild("ITEMPICKUP")
+}
+
+workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"):InvokeServer(unpack(args))
+end
+end)
+until LocalPlayer.Backpack:FindFirstChild("Lunch") or LocalPlayer.Backpack:FindFirstChild("Breakfast") or LocalPlayer.Backpack:FindFirstChild("Dinner")
+end
+end)
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
+        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") and CheckOwnedGamepass() then
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+        task.spawn(function()
+        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["Riot Shield"].ITEMPICKUP)
+        end)
+        until LocalPlayer.Backpack:FindFirstChild("Riot Shield")
+        Notify("Success", "Obtained Riot Shield", 2);
+        elseif not CheckOwnedGamepass() then
+        print("Debug_No gamepass")
+        else
+        print("Debug_Not in guards team")
+        end
+print("Successfully obtained all possible items")
+LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = SavedPosition
+end
+
 function Crim(Player, isSpamArrest) --(Modify this later)
     pcall(function()
         local SpawnLocation = game.Workspace:FindFirstChild("SpawnLocation");
@@ -1138,7 +1246,7 @@ local function characterAdded()
             LoadCameraPos()
             isTeleportingToOldPosAndHasNoForceField = false
         end
-        if States.AutoGivingGuns and not hasExecutedGuns then
+        if States.AutoGivingGuns or States.AutoItems and not hasExecutedGuns then
         hasExecutedGuns = true
         print("debug_hasExecutedGuns has been set to true")
         if hasDiedasCriminals then
@@ -1146,12 +1254,18 @@ local function characterAdded()
            task.wait(.4)
            pcall(function()
            GiveGuns()
+           if States.AutoItems then
+           GiveAllItems()
+           end
            end)
            print("debug_gave guns hasdiedascriminals")
         elseif hasDiedasGuards then
            repeat task.wait() until player.TeamColor == BrickColor.new("Bright blue") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
            task.wait(.4)
            pcall(function()
+           if States.AutoItems then
+           GiveAllItems()
+           end
            GiveGuns()
            end)
            print("debug_gave guns hasdiedasguards")
@@ -1159,6 +1273,9 @@ local function characterAdded()
            repeat task.wait() until game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
            task.wait(.1)
            pcall(function()
+           if States.AutoItems then
+           GiveAllItems()
+           end
            GiveGuns()
            end)
            print("debug_gave guns has died as inmates")
@@ -2623,7 +2740,7 @@ while States.ForceField do
                 workspace.Remote.TeamEvent:FireServer("Bright orange")
             end
             workspace.Remote.TeamEvent:FireServer("Bright blue")
-            task.wait(6)
+            task.wait(5)
 end
         end
          end
@@ -3170,6 +3287,48 @@ handle.Touched:Connect(function(part)
 end)
         Notify("Success", "Obtained FE stick", 2);
     end;
+    if CMD("antishield") or CMD("removeshield") then
+        States.AntiShield = not States.AntiShield
+        if States.AntiShield then
+        Notify("Success", "Toggled Antishield to true.", 2);
+        while States.AntiShield do
+        task.wait()
+        pcall(function()
+local Players = game:GetService("Players")
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        local character = player.Character
+        if character then
+            local riotShield = character:FindFirstChild("Riot Shield")
+            if riotShield then
+                riotShield:Destroy()
+            end
+        end
+    end
+end
+        end)
+        end
+        else
+        Notify("Success", "Toggled Antishield to false.", 2);
+        end
+    end;
+    if CMD("shield") or CMD("riotshield") then
+        local SavedPosition = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") and CheckOwnedGamepass() then
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+        task.spawn(function()
+        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["Riot Shield"].ITEMPICKUP)
+        end)
+        until LocalPlayer.Backpack:FindFirstChild("Riot Shield")
+        Notify("Success", "Obtained Riot Shield", 2);
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = SavedPosition
+        elseif not CheckOwnedGamepass() then
+        Notify("Error", "You must be have the gamepass to obtain this item.", 2);
+        else
+        Notify("Error", "You must be in guards team to obtain this item.", 2);
+        end
+    end;
     if CMD("nexus") or CMD("nex") then
         local Player = GetPlayer(Args[2], LocalPlayer)
         if Player then
@@ -3360,6 +3519,27 @@ Sky.Parent = game:GetService("Lighting")
         elseif Args[2] == "criminals" or Args[2] == "criminal" or Args[2] == "crims" or Args[2] == "c" then
             KillPlayers(Teams.Criminals)
             Notify("Success", "Now killed Criminals.", 2);
+        elseif Args[2] == "hostiles" or Args[2] == "hos" then
+local Players = game:GetService("Players")
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+                    local handcuffs = player.Character:FindFirstChild("Handcuffs")
+                    if handcuffs then
+                        Kill({player});
+                    end
+                    local AK47 = player.Character:FindFirstChild("AK-47")
+                    local Remington = player.Character:FindFirstChild("Remington 870")
+                    local M9 = player.Character:FindFirstChild("M9")
+                    local M4A1 = player.Character:FindFirstChild("M4A1")
+                    local Taser = player.Character:FindFirstChild("Taser")
+                    if AK47 or Remington or M9 or M4A1 or Taser then
+                        Kill({player});
+                        print("Debug_KilledHoldingGuns")
+                    end
+                    print("Debug_KilledHostiles") 
+    end
+end
+            Notify("Success", "Now killed Hostiles.", 2);
         else
             local Player = GetPlayer(Args[2], LocalPlayer);
             if Player then
@@ -3383,6 +3563,9 @@ Sky.Parent = game:GetService("Lighting")
         elseif Args[2] == "criminals" or Args[2] == "criminal" or Args[2] == "c" then
             States.KillCriminals = true;
             Notify("Success", "Now loop-killing Criminals.", 2);
+        elseif Args[2] == "hostiles" or Args[2] == "hos" then
+            States.KillHostiles = true;
+            Notify("Success", "Now loop-killing Hostiles.", 2);
         else
             local Player = GetPlayer(Args[2], LocalPlayer);
             if Player then
@@ -3399,6 +3582,7 @@ Sky.Parent = game:GetService("Lighting")
             States.KillGuards = false;
             States.KillInmates = false;
             States.KillCriminals = false;
+            States.KillHostiles = false;
             Loopkilling = {};
             Notify("Success", "Unloop-killed everyone.", 2);
         elseif Args[2] == "guards" or Args[2] == "guard" or Args[2] == "g" then
@@ -3419,6 +3603,9 @@ Sky.Parent = game:GetService("Lighting")
                 Loopkilling[v.UserId] = nil;
             end;
             Notify("Success", "Unloop-killed Criminals.", 2);
+        elseif Args[2] == "hostiles" or Args[2] == "hos" then
+            States.KillHostiles = false;
+            Notify("Success", "Unloop-killed Hostiles.", 2);
         else
             local Player = GetPlayer(Args[2], LocalPlayer);
             if Player then
@@ -3533,15 +3720,20 @@ Sky.Parent = game:GetService("Lighting")
         LoadPos();
     end;
     if CMD("aguns") or CMD("autoguns") then
+        if not States.AutoItems then
         States.AutoGivingGuns = true;
         Notify("Success", "Enabled auto-guns", 2);
         GiveGuns();
+        else
+        Notify("Error", "Already enabled autoitems, disable autoitems first before enabling autoguns", 2);
+        States.AutoGuns = false;
+        end
     end;
     if CMD("unaguns") or CMD("unautoguns") then
         States.AutoGivingGuns = false;
         Notify("Success", "Disabled auto-guns", 2);
     end;
-    if CMD("shield") then
+    if CMD("placeholder_shield") then
         task.wait(1/10);
         if CheckOwnedGamepass() then
             if Args[2] == "all" then
@@ -3648,6 +3840,11 @@ Sky.Parent = game:GetService("Lighting")
         task.wait(.1)
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
         until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = originalPosition
         Notify("Success", "Picked up Knife", 2);
@@ -3709,11 +3906,27 @@ Sky.Parent = game:GetService("Lighting")
 		Notify("Error", "Guards team full and there is no keycards dropped", 2);
 	end
     end;
+    if CMD("items") or CMD("allitems") then
+        GiveAllItems()
+        Notify("Success", "Obtained all possible items.", 2);
+    end;
+    if CMD("autoitems") or CMD("autoi") or CMD("aitems") then
+        States.AutoItems = true;
+        States.GiveGuns = true;
+        Notify("Success", "Enabled Autoitems.", 2);
+        GiveAllItems()
+    end;
+    if CMD("unautoitems") or CMD("unautoi") or CMD("unaitems") then
+        States.AutoItems = false
+        States.GiveGuns = false
+        myarguments.has_executedautoitems = false;
+        Notify("Success", "Disabled autoitems.", 2);
+    end;
     if CMD("givehandcuffs") or CMD("handcuffs") then
-        Notify("Error", Args[2] .. " This command does not exist yet!", 2);
+        Notify("Error", Args[2] .. " This command does not exist yet and is patched because you cant destroy humanoid!", 2);
     end;
     if CMD("givetaser") or CMD("taser") then
-        Notify("Error", Args[2] .. " This command does not exist yet!", 2);
+        Notify("Error", Args[2] .. " This command does not exist yet and is patched because you cant destroy humanoid!", 2);
     end;
     if CMD("armor") then
         if CheckOwnedGamepass() then
@@ -4011,7 +4224,7 @@ Sky.Parent = game:GetService("Lighting")
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
     end;
-    if CMD("ka") or CMD("killaura") then
+    if CMD("ka") or CMD("killaura") or CMD("aura") then
         local Player = GetPlayer(Args[2], LocalPlayer);
         if Player then
             KillAuras[Player.UserId] = Player;
@@ -4021,8 +4234,6 @@ Sky.Parent = game:GetService("Lighting")
                 KillAuras[v.UserId] = v;
             end;
             Notify("Success", "Gave everyone kill aura.", 2);
-        elseif not Player then
-            Notify("Error", Args[2] .. " is not a valid player / team.", 2);
         else
             Args[2] = Args[2]:lower()
             local First, Rest = Args[2]:sub(1, 1):upper(), Args[2]:sub(2);
@@ -4034,10 +4245,12 @@ Sky.Parent = game:GetService("Lighting")
             end);
             if Success then
                 Notify("Success", "Gave the " .. Team .. " kill aura.", 2);
+            else
+                Notify("Error", Args[2] .. " is not a valid player / team.", 2);
             end;
         end;
     end;
-    if CMD("unka") or CMD("unkillaura") then
+    if CMD("unka") or CMD("unkillaura") or CMD("unaura") then
         local Player = GetPlayer(Args[2], LocalPlayer);
         if Player then
             KillAuras[Player.UserId] = nil;
@@ -7408,7 +7621,7 @@ task.spawn(function()
     end)
     
     if not success then
-        print("An error occurred:", error)
+        warn("An error occurred:", error)
     end
     end;
 end);
@@ -7845,7 +8058,55 @@ task.spawn(function()
     end)
     
     if not success then
-        print("An error occurred:", error)
+        warn("An error occurred:", error)
+    end
+    end;
+end)
+
+--// Hostile kill:
+task.spawn(function()
+    while task.wait(.1) do
+    local success, error = pcall(function()
+        if States.KillHostiles then
+local Players = game:GetService("Players")
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        if not player.Character:FindFirstChild("ForceField") and player.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                    local handcuffs = player.Character:FindFirstChild("Handcuffs")
+                    if handcuffs then
+                        Kill({player});
+                        print("Debug_KilledHoldingHandcuffs")
+                    end
+                    local AK47 = player.Character:FindFirstChild("AK-47")
+                    local Remington = player.Character:FindFirstChild("Remington 870")
+                    local M9 = player.Character:FindFirstChild("M9")
+                    local M4A1 = player.Character:FindFirstChild("M4A1")
+                    local Taser = player.Character:FindFirstChild("Taser")
+                    local Hammer = player.Character:FindFirstChild("Hammer")
+                    local Knife = player.Character:FindFirstChild("Crude Knife")
+                    if AK47 or Remington or M9 or M4A1 or Taser or Hammer or Knife then
+                        Kill({player});
+                        print("Debug_KilledHoldingHostileItems")
+                    end
+            local Humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if Humanoid then
+                     for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
+                        if table.find(hostileanimationIds, track.Animation.AnimationId) then
+                            pcall(function()
+                                 Kill({player});
+                            end);
+                        end;
+                     end
+            end;
+                    --print("Debug_KilledHostiles") 
+        end
+    end
+end
+        end
+    end)
+    
+    if not success then
+        warn("An error occurred:", error)
     end
     end;
 end)
