@@ -3186,11 +3186,17 @@ end)
         Notify("Success", "Toggled Antishield to true.", 2);
         while States.AntiShield do
         task.wait()
-        task.spawn(function()
+        pcall(function()
 local Players = game:GetService("Players")
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
-        player.Character:FindFirstChild("Riot Shield"):Destroy()
+        local character = player.Character
+        if character then
+            local riotShield = character:FindFirstChild("Riot Shield")
+            if riotShield then
+                riotShield:Destroy()
+            end
+        end
     end
 end
         end)
