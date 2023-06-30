@@ -1,5 +1,5 @@
 
---I may have forgor to anchor parts (I always forget to anchor a new part)
+--Some parts are probably broken
 function sandbox(var,func)
 	local env = getfenv(func)
 	local newenv = setmetatable({},{
@@ -17136,4 +17136,6 @@ for i,v in pairs(cors) do
 		pcall(v)
 	end)
 end
+--Delete the "Working mirror" because it causes lag
+workspace.MangTangInamo:GetChildren()[205]:destroy()
 game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(313, 591.438, -700)
