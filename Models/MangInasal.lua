@@ -1,5 +1,5 @@
 
---I may have forgor to anchor parts :skull: and meshes are broken because i just use a converter plugin to convert the model to lua
+--Some parts are broken because i forgor
 function sandbox(var,func)
 	local env = getfenv(func)
 	local newenv = setmetatable({},{
@@ -16932,3 +16932,29 @@ for i,v in pairs(cors) do
 	end)
 end
 game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(313, 591.438, -700)
+-- Nothing 
+task.wait(6.9)
+task.spawn(function()
+local part = workspace.MangTangInamo:GetChildren()[172].Part
+part.Rotation = Vector3.new(-90, 0, -90)
+local decal = Instance.new("Decal")
+decal.Texture = "http://www.roblox.com/asset/?id=10359910538"
+decal.Face = Enum.NormalId.Top
+decal.Parent = part
+end)
+task.spawn(function()
+local part = workspace.MangTangInamo:GetChildren()[182].Part
+part.Rotation = Vector3.new(-90, 0, -90)
+local decal = Instance.new("Decal")
+decal.Texture = "http://www.roblox.com/asset/?id=10359910538"
+decal.Face = Enum.NormalId.Top
+decal.Parent = part
+end)
+task.spawn(function()
+local part = workspace.MangTangInamo:GetChildren()[203].Part
+part.Rotation = Vector3.new(-90, 0, -90)
+local decal = Instance.new("Decal")
+decal.Texture = "http://www.roblox.com/asset/?id=10359910538"
+decal.Face = Enum.NormalId.Top
+decal.Parent = part
+end)
