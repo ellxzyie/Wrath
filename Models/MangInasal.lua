@@ -16932,7 +16932,8 @@ for i,v in pairs(cors) do
 	end)
 end
 game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(313, 591.438, -700)
--- Nothing 
+-- Nothing
+task.spawn(function()
 task.wait(6.9)
 task.spawn(function()
 local part = workspace.MangTangInamo:GetChildren()[172].Part
@@ -16957,4 +16958,5 @@ local decal = Instance.new("Decal")
 decal.Texture = "http://www.roblox.com/asset/?id=10359910538"
 decal.Face = Enum.NormalId.Top
 decal.Parent = part
+end)
 end)
