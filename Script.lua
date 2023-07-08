@@ -259,8 +259,10 @@ local Commands = {
     "mlk / meleeloopkill [plr,all] -- melee loopkil plr/all";
     "unmlk /unmeleeloopkill [plr,all] -- unmelee loopkill plr/all";
     "nuke / kamikaze [plr] -- if player dies, everyone dies";
-    "supernuke / snuke [plr] -- if player dies, SERVER CRASHES!";
-    "unsupernuke / unsnuke [plr] -- remove supernuke from plr";
+    "crashnuke / cnuke [plr] -- if player dies, SERVER CRASHES!";
+    "chaosmode / chaos -- if any player dies, EVERYONE DIES";
+    "unchaosmode / unchaos -- stop chaos";
+    "uncrashnuke / uncnuke [plr] -- remove supernuke from plr (If the nuke has already executed, its too late.)";
     "defuse / unnuke [plr] -- removes nuke from plr";
     "killaura / aura / ka [plr,team,all] -- kill aura plr, team or all";
     "unka / unaura / unkillaura [plr,all] -- removes kill aura from player or all";
@@ -305,6 +307,8 @@ local Commands = {
     "hammer / ham -- gives you hammer (Obviously)";
     "knife / knive -- gives you knife (Obviously)";
     "riotshield / shield -- gives you riot shield (Gamepass and guards only)";
+    "skimask / mask -- gives you ski mask (Gamepass only)";
+    "riothelmet / helmet -- gives you riot helmet (Gamepass only)";
     "aguns -- auto give gun";
     "unaguns -- stop auto give gun";
     "autoitems / autoi / aitems -- auto give all prison life items";
@@ -753,7 +757,11 @@ function GiveGuns()
         end)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("M4A1")
         repeat task.wait()
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-936.604492, 96.554924, 2056.47314, 0.993467629, 3.80429599e-09, -0.11411453, -2.51227394e-09, 1, 1.14659642e-08, 0.11411453, -1.1104377e-08, 0.993467629)
+        task.spawn(function()
+        for i = 1, 30 do
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-937.176514, 87.1821442, 2055.64185, -0.995243192, -8.3973557e-09, 0.0974218473, 6.28506636e-10, 1, 9.26165242e-08, -0.0974218473, 9.22371939e-08, -0.995243192)
+        end
+        end)
         task.spawn(function()
         ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
         end)
@@ -773,7 +781,11 @@ function GiveGuns()
         end;
     else
         repeat task.wait()
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-936.604492, 96.554924, 2056.47314, 0.993467629, 3.80429599e-09, -0.11411453, -2.51227394e-09, 1, 1.14659642e-08, 0.11411453, -1.1104377e-08, 0.993467629)
+        task.spawn(function()
+        for i = 1, 30 do
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-937.176514, 87.1821442, 2055.64185, -0.995243192, -8.3973557e-09, 0.0974218473, 6.28506636e-10, 1, 9.26165242e-08, -0.0974218473, 9.22371939e-08, -0.995243192)
+        end
+        end)
         task.spawn(function()
         ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
         end)
@@ -1231,7 +1243,19 @@ local function characterAdded()
         end
         hasAlreadyDied = false
         if hasDiedasCriminals then
-        repeat task.wait() until player.TeamColor == BrickColor.new("Really red")
+        repeat task.wait()
+        task.spawn(function() --Just in case the executor doesnt support firetouchinterest
+               for i,v in pairs(workspace["Criminals Spawn"]:GetChildren()) do
+			if v then
+				if v:FindFirstChild("TouchInterest") then
+					firetouchinterest(game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart"),v,0)
+					wait()
+					firetouchinterest(game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart"),v,1)
+				end
+			end
+		end
+        end)
+        until player.TeamColor == BrickColor.new("Really red")
         local object = workspace['Criminals Spawn'].SpawnLocation
         local newPosition = CFrame.new(Vector3.new(10, 100, 10))
         object.CFrame = newPosition
@@ -1528,9 +1552,13 @@ function Kill(PLAYERS)
         task.wait(.1)
         local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
         repeat task.wait()
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-936.604492, 96.554924, 2056.47314, 0.993467629, 3.80429599e-09, -0.11411453, -2.51227394e-09, 1, 1.14659642e-08, 0.11411453, -1.1104377e-08, 0.993467629)
         task.spawn(function()
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
+        for i = 1, 30 do
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-937.176514, 87.1821442, 2055.64185, -0.995243192, -8.3973557e-09, 0.0974218473, 6.28506636e-10, 1, 9.26165242e-08, -0.0974218473, 9.22371939e-08, -0.995243192)
+        end
+        end)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
         end)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
@@ -1576,7 +1604,7 @@ function Kill(PLAYERS)
         end
     end
 
-    ItemHandler(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP)
+    ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP)
     ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
 
     pcall(function()
@@ -2059,9 +2087,13 @@ function KillPlayers(TEAM, Whitelist)
         task.wait(.1)
         local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
         repeat task.wait()
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-936.604492, 96.554924, 2056.47314, 0.993467629, 3.80429599e-09, -0.11411453, -2.51227394e-09, 1, 1.14659642e-08, 0.11411453, -1.1104377e-08, 0.993467629)
         task.spawn(function()
-        Workspace.Remote.ItemHandler:InvokeServer(Workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
+        for i = 1, 30 do
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-937.176514, 87.1821442, 2055.64185, -0.995243192, -8.3973557e-09, 0.0974218473, 6.28506636e-10, 1, 9.26165242e-08, -0.0974218473, 9.22371939e-08, -0.995243192)
+        end
+        end)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
         end)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
@@ -2111,7 +2143,7 @@ print("Moved crimpad")
         end;
     end;
 
-    ItemHandler(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP);
+    ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
     ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
 
     pcall(function()
@@ -3351,6 +3383,46 @@ end
         Notify("Error", "You must be in guards team to obtain this item.", 2);
         end
     end;
+    if CMD("skimask") or CMD("mask") then
+        if CheckOwnedGamepass() then
+        local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+        local timesup = false
+        task.spawn(function()
+        task.wait(1)
+        timesup = true
+        end)
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+        Workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.hats["Ski mask"].hat)
+        until timesup
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
+        Notify("Success", "Obtained ski mask", 2);
+        else
+        Notify("Error", "You must have the gamepass to obtain this item.", 2);
+        end
+    end;
+    if CMD("riothelmet") or CMD("helmet") then
+        if CheckOwnedGamepass() then
+        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+        local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+        local timesup = false
+        task.spawn(function()
+        task.wait(1)
+        timesup = true
+        end)
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+        Workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.hats["Riot helmet"].hat)
+        until timesup
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
+        Notify("Success", "Obtained riot helmet.", 2);
+        else
+        Notify("Error", "You must be in guards team to obtain this item.", 2);
+        end
+        else
+        Notify("Error", "You must have the gamepass to obtain this item.", 2);
+        end
+    end;
     if CMD("nexus") or CMD("nex") then
         local Player = GetPlayer(Args[2], LocalPlayer)
         if Player then
@@ -3809,7 +3881,11 @@ end
     if CMD("ak47") or CMD("ak") then
         local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
         repeat task.wait()
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-936.604492, 96.554924, 2056.47314, 0.993467629, 3.80429599e-09, -0.11411453, -2.51227394e-09, 1, 1.14659642e-08, 0.11411453, -1.1104377e-08, 0.993467629)
+        task.spawn(function()
+        for i = 1, 30 do
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-937.176514, 87.1821442, 2055.64185, -0.995243192, -8.3973557e-09, 0.0974218473, 6.28506636e-10, 1, 9.26165242e-08, -0.0974218473, 9.22371939e-08, -0.995243192)
+        end
+        end)
         task.spawn(function()
         ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
         end)
@@ -5512,17 +5588,30 @@ end
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
     end;
-    if CMD("supernuke") then
+    if CMD("chaosmode") or CMD("chaos") then
+        if not States.Chaosmode then
+        States.Chaosmode = true
+        Notify("Success", "Chaosmode activated.", 2);
+        Chat("!!! Chaosmode has been activated! if anyone dies, EVERYONE DIES !!!")
+        else
+        Notify("Error", "Chaosmode is already activated, type .unchaosmode or .unchaos to disable", 2);
+        end
+    end;
+    if CMD("unchaosmode") or CMD("unchaos") then
+        States.Chaosmode = false
+        Notify("Success", "Stopped the chaos", 2);
+    end;
+    if CMD("crashnuke") or CMD("cnuke") then
         local Player = GetPlayer(Args[2], LocalPlayer);
         if Player then
             SuperNukes[Player.UserId] = Player;
-            Chat("!!! " .. Player.DisplayName .. " has turned into a SuperNuke - if they die, THE SERVER WILL BE CRASHED!!!");
-            Notify("Success", "Turned " .. Player.Name .. " into a SuperNuke.", 2);
+            Chat("!!! " .. Player.DisplayName .. " has turned into a CrashNuke - if they die, THE SERVER WILL BE CRASHED!!!");
+            Notify("Success", "Turned " .. Player.Name .. " into a CrashNuke.", 2);
         else
             Notify("Error", Args[2] .. " is not a valid player.", 2);
         end;
     end;
-    if CMD("unsupernuke") then
+    if CMD("uncrashnuke") or CMD("uncnuke") then
         local Player = GetPlayer(Args[2], LocalPlayer);
         if Player then
             SuperNukes[Player.UserId] = nil;
@@ -7756,7 +7845,7 @@ task.spawn(function()
     end;
 end)
 
---// SuperNukes:
+--// CrashNukes (I named it supernuke earlier, but i changed it to crashnuke because theres nothing "super" about it):
 task.spawn(function()
     while task.wait(0.03) do
         if next(SuperNukes) then
@@ -7765,7 +7854,7 @@ task.spawn(function()
                     local Humanoid = v.Character:FindFirstChildWhichIsA("Humanoid");
                     if Humanoid then
                         if Humanoid.Health <= 0 then
-                            Chat("!!! THE SUPERNUKE (" .. v.DisplayName .. ") HAS BEEN ACTIVATED - SAY YOUR LAST GOODBYES BEFORE THE SERVER CRASHES !!!");
+                            Chat("!!! THE CRASHNUKE (" .. v.DisplayName .. ") HAS BEEN ACTIVATED - SAY YOUR LAST GOODBYES BEFORE THE SERVER CRASHES !!!");
                             task.wait(1)
                             Chat("THE SERVER WILL CRASH IN 5..");
                             task.wait(1.5);
@@ -7831,6 +7920,36 @@ task.spawn(function()
             end;
         end;
     end;
+end)
+
+--// Chaosmode:
+task.spawn(function()
+while task.wait(.1) do
+pcall(function()
+if States.Chaosmode then
+for i,v in pairs(Players:GetPlayers()) do
+    if not myarguments.nonexistentnil2312 then
+        if v.Character and not myarguments.donotexecutechaos then
+            local Humanoid = v.Character:FindFirstChildWhichIsA("Humanoid");
+            if Humanoid then
+                if Humanoid.Health == 0 and not myarguments.donotexecutechaos then
+                    myarguments.donotexecutechaos = true
+                    print("Debug_Set do not execute chaos to true")
+                    Chat("!!! (" .. v.DisplayName .. ") HAS DIED, EVERYONE WILL NOW DIE !!!");
+                    task.wait(.4)
+                    KillPlayers(Players);
+                    task.wait(7)
+                    myarguments.donotexecutechaos = false
+                end
+            end;
+        else
+           print("Debug_Do not execute chaos is: true")
+        end;
+    end;
+end;
+end
+end)
+end
 end)
 
 --// Loop tase:
@@ -10956,19 +11075,27 @@ end
 
 buttonH.MouseButton1Click:Connect(function()
     game:GetService("VirtualInputManager"):SendKeyEvent(true, "H", false, game)
+    task.wait(.1)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, "H", false, game)
 end)
 
 buttonF.MouseButton1Click:Connect(function()
     game:GetService("VirtualInputManager"):SendKeyEvent(true, "F", false, game)
+    task.wait(.1)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, "F", false, game)
 end)
 
 buttonC.MouseButton1Click:Connect(function()
     game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
+    task.wait(.1)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, "C", false, game)
 end)
-print("User is on mobile, loading Mobile GUI")
+print("User is on mobile, loaded Mobile GUI")
 else
 print("User is on PC, loading Text2Emoji Converter")
+task.spawn(function()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/ellxzyie/Text2Emoji/main/Main'))()
+end)
 end
 
 --// Anti AFK:
