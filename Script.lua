@@ -285,7 +285,6 @@ local Commands = {
     "getk / getkillauras -- gets all players that have a kill aura";
     "getlt / getlooptase -- gets all players that are being loop tased";
     "getmlk / getmeleeloopkill -- gets all players that are being melee loop killed";
-    "sword / stick -- client sided stick that kills players";
     "=== ARREST/TAZE COMMANDS ===";
     "antiarrest / aar -- makes you still move even when arrested";
     "sa [plr] -- spam arrest plr";
@@ -306,16 +305,21 @@ local Commands = {
     "m4a1 / m4 -- gives you m4a1 (Gamepass only)";
     "hammer / ham -- gives you hammer (Obviously)";
     "knife / knive -- gives you knife (Obviously)";
+    "dinner / lunch / breakfast -- gives you dinner/lunch/breakfast (If there is any)";
     "riotshield / shield -- gives you riot shield (Gamepass and guards only)";
     "skimask / mask -- gives you ski mask (Gamepass only)";
     "riothelmet / helmet -- gives you riot helmet (Gamepass only)";
+    "riotarmor / armor -- gives you riot armor (Gamepass and guards only)";
+    "sword / stick -- client sided stick that kills players";
+    "autosword / stick -- automatically get client sided stick";
+    "unautosword / unautostick -- disable automatic client sided stick";
     "aguns -- auto give gun";
     "unaguns -- stop auto give gun";
     "autoitems / autoi / aitems -- auto give all prison life items";
     "unautoitems / unautoi / unaitems -- stops auto give all items";
     "items / allitems -- gives all items";
     "gun / guns -- gives guns (one time)";
-    "af / autofire -- disables semi auto guns (m9) || taser isn't affected :(";
+    "af / autofire -- disables semi auto guns (m9) || (Only works on PC)";
     "aaf / autoaf -- automatically enables autofire every time you respawn";
     "ia / infammo -- emables infinite ammo";
     "aia / autoinfammo -- automatically enables infinite ammo every time you respawn";
@@ -832,17 +836,19 @@ GiveGuns()
         ItemHandler(workspace.Prison_ITEMS.single["Hammer"].ITEMPICKUP);
         end)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("Hammer")
-        repeat
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(786.09967, 98.1877518, 2386.16528, -0.572712839, -1.94576568e-08, -0.819756091, 4.30706315e-09, 1, -2.67449884e-08, 0.819756091, -1.88479383e-08, -0.572712839)
+        local KnifePivot = workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP:GetPivot()
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = KnifePivot
+        task.spawn(function()
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
-        task.wait(.1)
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
-        ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        end)
+        task.spawn(function()
         if game.Players.LocalPlayer.Character.Humanoid.Sit then
 	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
         end
+        end)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
         else
         print("Player is on guards team, ignoring give hammer and knife")
@@ -853,6 +859,11 @@ local Breakfast = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Breakfast")
 local Lunch = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Lunch")
 if Dinner or Breakfast or Lunch then
 repeat task.wait()
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
 task.spawn(function()
 if Dinner then
 game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(910.673523, 99.9899368, 2247.09033, 0.999266565, 1.21980905e-08, -0.0382928811, -1.2718445e-08, 1, -1.33452014e-08, 0.0382928811, 1.38224392e-08, 0.999266565)
@@ -901,6 +912,11 @@ end)
         print("Debug_Not in guards team")
         end
 print("Successfully obtained all possible items")
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
 LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame = SavedPosition
 end
 
@@ -1332,12 +1348,60 @@ local function characterAdded()
           --Placeholder
         end
         hasDiedasCriminals = false
+        task.spawn(function()
+        if States.AutoSword then
+local plr = game.Players.LocalPlayer
+local tool = Instance.new("Tool", plr.Backpack)
+tool.GripPos = Vector3.new(0.1, -1, 0)
+tool.Name = "Sword"
+
+local handle = Instance.new("Part", tool)
+handle.Name = "Handle"
+handle.Size = Vector3.new(0.4, 4, 0.4)
+
+local animation = Instance.new("Animation", tool)
+animation.AnimationId = "rbxassetid://218504594"
+
+local animationTrack = plr.Character.Humanoid:LoadAnimation(animation)
+
+local canPlayAnimation = true
+local isAttacking = false
+
+tool.Equipped:Connect(function()
+    tool.Activated:Connect(function()
+        if canPlayAnimation then
+            canPlayAnimation = false
+            animationTrack:Play()
+            wait()
+            isAttacking = true
+            canPlayAnimation = true
+            wait(0.1)
+            isAttacking = false
+        end
+    end)
+end)
+
+handle.Touched:Connect(function(part)
+    if isAttacking then
+        local humanoid = part.Parent:FindFirstChild("Humanoid")
+        if humanoid ~= nil then
+            local player = game.Players:FindFirstChild(part.Parent.Name)
+            for i = 1, 10 do
+                if player.Name ~= "lololol2737" then
+                    game.ReplicatedStorage.meleeEvent:FireServer(player)
+                end
+            end
+        end
+    end
+end)
+    end
+    end)
     end
     --Additional check to fully make sure player is on old position (Because sometimes autorespawn does not spawn back to old position and also in other script like tiger admin)
     task.spawn(function()
         task.wait(.05)
         print("Debug_task.wait .05")
-        if char.HumanoidRootPart.CFrame ~= diedpos and not myarguments.breaktigeradmin then
+        if char.HumanoidRootPart.CFrame ~= diedpos and not myarguments.breaktigeradmin and not States.AutoGivingGuns and not States.AutoItems then
             repeat task.wait()
             if not LocalPlayer.Character:FindFirstChild("ForceField") then
                 task.wait(.1)
@@ -1592,6 +1656,7 @@ function Kill(PLAYERS)
                 elseif LocalPlayer.TeamColor == BrickColor.new("Really red") then
                         if v.Character and v.TeamColor == BrickColor.new("Really red") and not v.Character:FindFirstChild("ForceField") and v.Character:WaitForChild("Humanoid").Health > 0 then
                             States.FriendlyFire = true
+                            myarguments.donotexecute_friendlyfireantiarrestkill = true
                             print("Changed Friendlyfire to true to kill criminals")
         if States.FriendlyFire then
             SaveCameraPos()
@@ -1636,6 +1701,7 @@ function Kill(PLAYERS)
         end
     omagadbruh = false
     States.FriendlyFire = false
+    myarguments.donotexecute_friendlyfireantiarrestkill = false
 end
 
 function Tase(PLAYERS)
@@ -2128,6 +2194,7 @@ print("Moved crimpad")
                     elseif LocalPlayer.TeamColor == BrickColor.new("Really red") then
                         if PLR.Character and PLR.TeamColor == BrickColor.new("Really red") and not PLR.Character:FindFirstChild("ForceField") and PLR.Character:WaitForChild("Humanoid").Health > 0 then
                             States.FriendlyFire = true
+                            myarguments.donotexecute_friendlyfireantiarrestkillplayers = true
                             print("Changed Friendlyfire to true to kill criminals")
         if States.FriendlyFire then
             SaveCameraPos()
@@ -2174,6 +2241,7 @@ print("Moved crimpad")
         end
     omagadbruh = false
     States.FriendlyFire = false
+    myarguments.donotexecute_friendlyfireantiarrestkillplayers = false
 end;
 
 function Annoy(PLR)
@@ -2885,8 +2953,20 @@ end)
 task.wait()
 end 
         end)
+--// Anti Arrest: (Yes, i moved it into here because performance issues on my garbage tablet that has 20 fps, Maybe too much while true do loops cause performance issues IDK)
+task.spawn(function()
+    while States.AntiArrest do task.wait(0.03)
+        if States.AntiArrest then
+	    for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
+		v:Disable()
+	    end
+        end
+    end
+end)
         while States.AntiArrest do
+            pcall(function()
             if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.FriendlyFire then
+            if not myarguments.donotexecute_friendlyfireantiarrestkill and not myarguments.donotexecute_friendlyfireantiarrestkillplayers then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
             if player.TeamColor == BrickColor.new("Really red") and not States.FriendlyFire then
@@ -2898,7 +2978,9 @@ end
             oldTeamIsCriminals = false
             end
             end
-            task.wait(.1)
+            end
+            end)
+            task.wait()
         end
         else
         Notify("Success", "Disabled antiarrest", 2);
@@ -3350,6 +3432,58 @@ handle.Touched:Connect(function(part)
 end)
         Notify("Success", "Obtained FE stick", 2);
     end;
+    if CMD("autosword") or CMD("autostick") then
+        States.AutoSword = true
+local plr = game.Players.LocalPlayer
+local tool = Instance.new("Tool", plr.Backpack)
+tool.GripPos = Vector3.new(0.1, -1, 0)
+tool.Name = "Sword"
+
+local handle = Instance.new("Part", tool)
+handle.Name = "Handle"
+handle.Size = Vector3.new(0.4, 4, 0.4)
+
+local animation = Instance.new("Animation", tool)
+animation.AnimationId = "rbxassetid://218504594"
+
+local animationTrack = plr.Character.Humanoid:LoadAnimation(animation)
+
+local canPlayAnimation = true
+local isAttacking = false
+
+tool.Equipped:Connect(function()
+    tool.Activated:Connect(function()
+        if canPlayAnimation then
+            canPlayAnimation = false
+            animationTrack:Play()
+            wait()
+            isAttacking = true
+            canPlayAnimation = true
+            wait(0.1)
+            isAttacking = false
+        end
+    end)
+end)
+
+handle.Touched:Connect(function(part)
+    if isAttacking then
+        local humanoid = part.Parent:FindFirstChild("Humanoid")
+        if humanoid ~= nil then
+            local player = game.Players:FindFirstChild(part.Parent.Name)
+            for i = 1, 10 do
+                if player.Name ~= "lololol2737" then
+                    game.ReplicatedStorage.meleeEvent:FireServer(player)
+                end
+            end
+        end
+    end
+end)
+        Notify("Success", "Enabled autosword", 2);
+    end;
+    if CMD("unautosword") or CMD("unautostick") then
+        States.AutoSword = false
+        Notify("Success", "Disabled auto sword", 2);
+    end;
     if CMD("antishield") or CMD("removeshield") then
         States.AntiShield = not States.AntiShield
         if States.AntiShield then
@@ -3395,15 +3529,12 @@ end
     if CMD("skimask") or CMD("mask") then
         if CheckOwnedGamepass() then
         local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-        local timesup = false
-        task.spawn(function()
-        task.wait(1)
-        timesup = true
-        end)
         repeat task.wait()
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+        task.spawn(function()
         Workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.hats["Ski mask"].hat)
-        until timesup
+        end)
+        until LocalPlayer.Character:FindFirstChild("Ski mask")
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
         Notify("Success", "Obtained ski mask", 2);
         else
@@ -3412,24 +3543,36 @@ end
     end;
     if CMD("riothelmet") or CMD("helmet") then
         if CheckOwnedGamepass() then
-        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
         local mysavedpos = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-        local timesup = false
-        task.spawn(function()
-        task.wait(1)
-        timesup = true
-        end)
         repeat task.wait()
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+        task.spawn(function()
         Workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.hats["Riot helmet"].hat)
-        until timesup
+        end)
+        until LocalPlayer.Character:FindFirstChild("Riot helmet")
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
         Notify("Success", "Obtained riot helmet.", 2);
         else
-        Notify("Error", "You must be in guards team to obtain this item.", 2);
+        Notify("Error", "You must have the gamepass to obtain this item.", 2);
+        end
+    end;
+    if CMD("armor") or CMD("riotarmor") then
+        if CheckOwnedGamepass() then
+        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+                local oldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                repeat task.wait()
+                game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(854.217712, 97.9999161, 2245.10669, -0.999994159, 6.90645834e-08, -0.00342302723, 6.34244586e-08, 1, 1.64780897e-06, 0.00342302723, 1.64758217e-06, -0.999994159)
+                task.spawn(function()
+                workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.clothes["Riot Police"].ITEMPICKUP)
+                end)
+                until LocalPlayer.Character:FindFirstChild("vest")
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = oldpos
+                Notify("Success", "Obtained riot armor.", 2);
+        else
+                Notify("Error", "You must be in guards team to obtain this item.", 2);
         end
         else
-        Notify("Error", "You must have the gamepass to obtain this item.", 2);
+                Notify("Error", "You must have the gamepass to obtain this item.", 2);
         end
     end;
     if CMD("nexus") or CMD("nex") then
@@ -3941,20 +4084,69 @@ end
     end;
     if CMD("knive") or CMD("knife") then
         local originalPosition = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-        repeat
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(786.09967, 98.1877518, 2386.16528, -0.572712839, -1.94576568e-08, -0.819756091, 4.30706315e-09, 1, -2.67449884e-08, 0.819756091, -1.88479383e-08, -0.572712839)
+        local KnifePivot = workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP:GetPivot()
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = KnifePivot
+        task.spawn(function()
         ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
-        task.wait(.1)
-        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(707.04895, 101.799995, 2503.27783, -0.997578502, -5.42100373e-08, -0.0695496127, -5.9590878e-08, 1, 7.52921565e-08, 0.0695496127, 7.9254356e-08, -0.997578502)
-        ItemHandler(workspace.Prison_ITEMS.single["Crude Knife"].ITEMPICKUP);
+        end)
+        task.spawn(function()
         if game.Players.LocalPlayer.Character.Humanoid.Sit then
 	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
         end
+        end)
         until game.Players.LocalPlayer.Backpack:FindFirstChild("Crude Knife")
+        repeat task.wait()
+        if game.Players.LocalPlayer.Character.Humanoid.Sit then
+	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+        end
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = originalPosition
+        until LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame == originalPosition
         Notify("Success", "Picked up Knife", 2);
+    end;
+    if CMD("dinner") or CMD("lunch") or CMD("breakfast") then
+    local originalPosition = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+local Dinner = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Dinner")
+local Breakfast = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Breakfast")
+local Lunch = game.Workspace.Prison_ITEMS.giver:FindFirstChild("Lunch")
+if Dinner or Breakfast or Lunch then
+repeat task.wait()
+task.spawn(function()
+if Dinner then
+game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(910.673523, 99.9899368, 2247.09033, 0.999266565, 1.21980905e-08, -0.0382928811, -1.2718445e-08, 1, -1.33452014e-08, 0.0382928811, 1.38224392e-08, 0.999266565)
+local args = {
+    [1] = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver"):WaitForChild("Dinner"):WaitForChild("ITEMPICKUP")
+}
+
+workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"):InvokeServer(unpack(args))
+end
+if Breakfast then
+game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(910.162109, 99.9899368, 2246.86987, 0.988961577, -4.27984723e-08, 0.148172304, 5.56260282e-08, 1, -8.24278956e-08, -0.148172304, 8.97602561e-08, 0.988961577)
+local args = {
+    [1] = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver"):WaitForChild("Breakfast"):WaitForChild("ITEMPICKUP")
+}
+
+workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"):InvokeServer(unpack(args))
+end
+if Lunch then
+game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(894.200867, 99.9899368, 2245.92969, 0.999898911, -4.37882974e-08, 0.0142196361, 4.279104e-08, 1, 7.04365917e-08, -0.0142196361, -6.98209988e-08, 0.999898911)
+local args = {
+    [1] = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver"):WaitForChild("Lunch"):WaitForChild("ITEMPICKUP")
+}
+
+workspace:WaitForChild("Remote"):WaitForChild("ItemHandler"):InvokeServer(unpack(args))
+end
+end)
+until LocalPlayer.Backpack:FindFirstChild("Lunch") or LocalPlayer.Backpack:FindFirstChild("Breakfast") or LocalPlayer.Backpack:FindFirstChild("Dinner")
+Notify("Success", "Obtained dinner/lunch/breakfast.", 2);
+else
+Notify("Error", "There is no dinner/lunch/breakfast yet!", 2);
+end
+    LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = originalPosition
     end;	
     if CMD("keycard") or CMD("key") or CMD("card") then
 	SavePos()
@@ -4035,7 +4227,7 @@ end
     if CMD("givetaser") or CMD("taser") then
         Notify("Error", Args[2] .. " This command does not exist yet and is patched because you cant destroy humanoid!", 2);
     end;
-    if CMD("armor") then
+    if CMD("placeholder_armor") then
         if CheckOwnedGamepass() then
             SavePos();
             local SavedTeam = LocalPlayer.TeamColor.Name
@@ -8657,17 +8849,6 @@ end)
         --end;
     --end;
 --end)
-
---// Anti Arrest:
-task.spawn(function()
-    while task.wait(0.03) do
-        if States.AntiArrest then
-	    for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
-		v:Disable()
-	    end
-        end
-    end
-end)
 
 --// Anti Void:
 task.spawn(function()
