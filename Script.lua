@@ -409,13 +409,16 @@ local Commands = {
     "undef / undefenses -- disables all defenses";
     "=== LAG/CRASH COMMANDS ===";
     "crashserver / servercrash / svcrash -- crashes server using m9";
-    "sc / softcrash -- freezes everyone's screen but keeps the server alive, best way to empty servers";
+    "sc / softcrash -- lags and freezes everyones device (May not work depending on how garbage your wifi is)";
+    "sc2 / softcrash2 -- softcrash but using m9";
+    "loopsoftcrash / loopcrash / lsc -- loops softcrash";
+    "unloopsoftcrash / unloopcrash / unlsc -- unloops softcrash";
     "lag [strength] -- lags server with strength indefinitely";
     "unlag -- stops lag";
     "timeout -- kills server, doesnt freeze people's screens";
     "supercrash / scrash -- kills server with all guns";
     "tcrash / tscrash / tspamcrash -- Crashes all players using TeamEvent spam (Low ping only)";
-    "tscrash2 / tcrash2 / tspamcrash2 -- 1000000 Team Event spam (Might crash you)";
+    "tscrash2 / tcrash2 / tspamcrash2 -- 1000000 Team Event spam (Might crash you and not work)";
     "=== MAP ===";
     "nodoors -- removes doors";
     "doors / redoors -- restores doors";
@@ -1224,7 +1227,7 @@ local function characterAdded()
         if myarguments.breaktigeradmin then
         States.AntiVoid = true
         myarguments.breaktigeradmin = false
-        task.wait(.5)
+        task.wait(3)
         LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = myarguments.oldposition1
         end
         if not hasAlreadyDied and not isChangingTeamToInmates and player.TeamColor == BrickColor.new("Bright orange") and oldTeamIsCriminals and States.AntiArrest then
@@ -1264,10 +1267,10 @@ local function characterAdded()
         if not game.Players.LocalPlayer.Character:FindFirstChild("ForceField") then
             isTeleportingToOldPosAndHasNoForceField = true
             repeat task.wait(.09)
-            SaveCameraPos()
+            --SaveCameraPos()
             char:WaitForChild("HumanoidRootPart").CFrame = diedpos
             until char.HumanoidRootPart.CFrame == diedpos
-            LoadCameraPos()
+            --LoadCameraPos()
             isTeleportingToOldPosAndHasNoForceField = false
         end
         if States.AutoGivingGuns or States.AutoItems and not hasExecutedGuns then
@@ -1332,13 +1335,17 @@ local function characterAdded()
     end
     --Additional check to fully make sure player is on old position (Because sometimes autorespawn does not spawn back to old position and also in other script like tiger admin)
     task.spawn(function()
-        task.wait(.4)
-        if not char.HumanoidRootPart.CFrame == diedpos and not myarguments.breaktigeradmin then
-            repeat task.wait(.09)
-            SaveCameraPos()
+        task.wait(.05)
+        print("Debug_task.wait .05")
+        if char.HumanoidRootPart.CFrame ~= diedpos and not myarguments.breaktigeradmin then
+            repeat task.wait()
+            if not LocalPlayer.Character:FindFirstChild("ForceField") then
+                task.wait(.1)
+            end
+            --SaveCameraPos()
             char:WaitForChild("HumanoidRootPart").CFrame = diedpos
             until char.HumanoidRootPart.CFrame == diedpos
-            LoadCameraPos()
+            --LoadCameraPos()
         end
     end)
 end
@@ -1946,10 +1953,10 @@ function TeleportPlayers(Player1, Player2)
                                             task.wait(.1)
                                             game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
                                         end
-					HumanoidRootPart.CFrame = CFrame.new(-910, 95, 2157)
-					workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"])
+					HumanoidRootPart.CFrame = CFrame.new(-190.722427, 54.774929, 1880.20374, 0.007893865, 6.46408438e-08, 0.999968827, -3.42371038e-08, 1, -6.43725926e-08, -0.999968827, -3.37278863e-08, 0.007893865)
+					workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.buttons["Car Spawner"]["Car Spawner"])
 				end
-			until Car or tick() - Tick1 >= 0
+			until Car
 			HumanoidRootPart.CFrame = LastPosition
 			if Car and Humanoid and HumanoidRootPart and Torso and Humanoid1 then
 				Car.PrimaryPart = Car.RWD
@@ -2829,6 +2836,7 @@ else
 Notify("Success", "Disabled autofirerate.", 2);
 end
 while fastfirerate do
+pcall(function()
 if game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool") then
 local plr = game.Players.LocalPlayer
 local Tool = plr.Character:FindFirstChildOfClass("Tool")
@@ -2836,7 +2844,8 @@ local gun = require(Tool.GunStates)
 gun["FireRate"] = -math.huge
 gun["AutoFire"] = true
 end
-task.wait()
+end)
+task.wait(.1)
 end
     end;
     if CMD("antiarrest") or CMD("aar") then
@@ -2889,7 +2898,7 @@ end
             oldTeamIsCriminals = false
             end
             end
-            task.wait()
+            task.wait(.1)
         end
         else
         Notify("Success", "Disabled antiarrest", 2);
@@ -5053,6 +5062,10 @@ end
             Notify("Error", Args[2] .. " isn't a valid player.", 2);
         end;
     end;
+    if CMD("cleartrapped") or CMD("cltr") then
+        Trapped = {};
+        Notify("Success", "cleared all trapped", 2);
+    end;
     if CMD("getinv") or CMD("getinvis") then
         print("====== INVISIBLE PLAYERS ======")
         for _,CHAR in pairs(workspace:GetChildren()) do
@@ -5889,6 +5902,129 @@ end
         rStorage.ReloadEvent:FireServer(Gun);
         Notify("Success", "Soft-crashed server.", 2);
     end;
+    if CMD("sc2") or CMD("softcrash2") then
+        local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        if LocalPlayer.TeamColor ~= BrickColor.new("Bright blue") then
+             if #game:GetService("Teams").Guards:GetPlayers() < 8 then
+		  Workspace.Remote.TeamEvent:FireServer("Bright blue")
+	     end
+        end
+        local hasM9 = LocalPlayer.Backpack:FindFirstChild("M9") or LocalPlayer.Character:FindFirstChild("M9")
+        if not hasM9 then
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(823.65094, 97.9999161, 2245.10767, -0.999999464, -1.04425968e-10, 0.0010568779, 4.0250827e-11, 1, 1.36890719e-07, -0.0010568779, 1.36890691e-07, -0.999999464)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP);
+        end)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
+        end)
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("M9")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+        end
+        local Events = {};
+        for i = 1, 100000 do
+            local origin, destination = LocalPlayer.Character.HumanoidRootPart.Position, workspace:FindFirstChildOfClass("Part").Position;
+            local distance, ray = (origin-destination).Magnitude, Ray.new(origin, (destination-origin).unit*9e9)
+            local cf = CFrame.new(destination, origin) * CFrame.new(0, 0, -distance / 2);
+            Events[#Events+1] = {
+                Hit = v,
+                Cframe = cf,
+                Distance = distance,
+                RayObject = Ray.new(Vector3.new(), Vector3.new())
+            }
+        end;
+        ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
+        local Gun = LocalPlayer.Character:FindFirstChild("M9") or LocalPlayer.Backpack:FindFirstChild("M9")
+        rStorage.ShootEvent:FireServer(Events, Gun)
+        rStorage.ReloadEvent:FireServer(Gun);
+        Notify("Success", "Soft-crashed server.", 2);
+    end;
+    if CMD("loopsoftcrash") or CMD("lsoftcrash") or CMD("loopcrash") or CMD("lsc") then
+        States.Softcrashing = true
+        task.spawn(function()
+        while States.Softcrashing do task.wait(1.4)
+        pcall(function()
+        local math = math.random(1, 2)
+        if math == 1 then
+        print("Debug_math.random is 1 or M9")
+        local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        local hasM9 = LocalPlayer.Backpack:FindFirstChild("M9") or LocalPlayer.Character:FindFirstChild("M9")
+        if not hasM9 then
+        repeat task.wait()
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(823.65094, 97.9999161, 2245.10767, -0.999999464, -1.04425968e-10, 0.0010568779, 4.0250827e-11, 1, 1.36890719e-07, -0.0010568779, 1.36890691e-07, -0.999999464)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
+        end)
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("M9")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+        end
+        local Events = {};
+        for i = 1, 100000 do
+            local origin, destination = LocalPlayer.Character.HumanoidRootPart.Position, workspace:FindFirstChildOfClass("Part").Position;
+            local distance, ray = (origin-destination).Magnitude, Ray.new(origin, (destination-origin).unit*9e9)
+            local cf = CFrame.new(destination, origin) * CFrame.new(0, 0, -distance / 2);
+            Events[#Events+1] = {
+                Hit = v,
+                Cframe = cf,
+                Distance = distance,
+                RayObject = Ray.new(Vector3.new(), Vector3.new())
+            }
+        end;
+        ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP);
+        local Gun = LocalPlayer.Character:FindFirstChild("M9") or LocalPlayer.Backpack:FindFirstChild("M9")
+        rStorage.ShootEvent:FireServer(Events, Gun)
+        rStorage.ReloadEvent:FireServer(Gun);
+        elseif math == 2 then
+        print("Debug_math.random is 2 or AK-47")
+        local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        local hasAK = LocalPlayer.Backpack:FindFirstChild("AK-47") or LocalPlayer.Character:FindFirstChild("AK-47")
+        if not hasAK then
+        repeat task.wait()
+        task.spawn(function()
+        for i = 1, 30 do
+        game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(-937.176514, 87.1821442, 2055.64185, -0.995243192, -8.3973557e-09, 0.0974218473, 6.28506636e-10, 1, 9.26165242e-08, -0.0974218473, 9.22371939e-08, -0.995243192)
+        end
+        end)
+        task.spawn(function()
+        ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
+        end)
+        until game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+        end
+        local Events = {};
+        for i = 1, 100000 do
+            local origin, destination = LocalPlayer.Character.HumanoidRootPart.Position, workspace:FindFirstChildOfClass("Part").Position;
+            local distance, ray = (origin-destination).Magnitude, Ray.new(origin, (destination-origin).unit*9e9)
+            local cf = CFrame.new(destination, origin) * CFrame.new(0, 0, -distance / 2);
+            Events[#Events+1] = {
+                Hit = v,
+                Cframe = cf,
+                Distance = distance,
+                RayObject = Ray.new(Vector3.new(), Vector3.new())
+            }
+        end;
+        ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
+        local Gun = LocalPlayer.Character:FindFirstChild("AK-47") or LocalPlayer.Backpack:FindFirstChild("AK-47")
+        rStorage.ShootEvent:FireServer(Events, Gun)
+        rStorage.ReloadEvent:FireServer(Gun);
+        end
+        end)
+        end
+        end)
+        --repeat task.wait() until myarguments.isalreadyfired
+--local RunService = game:GetService("RunService") --Placeholder, tried to include the team event crash, but it didnt work.
+--RunService.Heartbeat:Connect(function()
+---for i = 1, 40 do
+--workspace.Remote.TeamEvent:FireServer("Bright blue")
+--end
+    ---end)
+       Notify("Success", "Loop-softcrashing", 2);
+    end;
+    if CMD("unloopsoftcrash") or CMD("unloopcrash") then
+        States.Softcrashing = false
+        Notify("Success", "Stopped loop-softcrashing.", 2);
+    end;
     if CMD("lb") or CMD("loopbring") then
         if Args[2] == "all" then
             Notify("Success", "Loop-bringing all.", 2);
@@ -6718,10 +6854,10 @@ function UseRankedCommands(MESSAGE, Admin)
     end;
 
     if CMD2("cmds") or CMD2("cmd") then
-        Chat("/w " .. Admin.Name .. " [Dont be an idiot]: Please note that this is not 'REAL ADMIN' or something and you cant change speed and fly because its just exploits!");
+        Chat("/w " .. Admin.Name .. " [NOTICE]:  Crim, fling, sfling, key commands are placeholders! it will not work.");
         Chat("/w " .. Admin.Name .. " " .. PF .. "kill [plr,inmates,guards,criminals,all] " .. PF .. "lk/loopkill [plr] " .. PF .. "unlk [plr] " .. PF .. "arrest [plr] " .. PF .. "crim [plr] " .. PF .. "fling [plr] " .. PF .. "sfling [plr] ");
         Chat("/w " .. Admin.Name .. " " .. PF .. "key [plr] " .. PF .. "tase [plr,all] " .. PF .. "ctp [plr] "  .. PF .. "bring [plr] " .. PF .. "oneshot [plr] "  .. PF .. "goto [plr] " .. PF .. "onepunch [plr] " .. PF .. "doorsopen/opensesame ");
-        Chat("/w " .. Admin.Name .. " " .. PF .. "nexus [plr] " .. PF .. "cafe [plr] " .. PF .. "tower [plr] " .. PF .. "yard [plr] " .. PF .. "cells [plr] " .. PF .. "back [plr] " .. PF .. "base [plr] " .. PF .. "trap [plr] " .. PF .. "untrap [plr] ");
+        Chat("/w " .. Admin.Name .. " " .. PF .. "nexus [plr] " .. PF .. "cafe [plr] " .. PF .. "tower [plr] " .. PF .. "yard [plr] " .. PF .. "cells [plr] " .. PF .. "back [plr] " .. PF .. "crimbase/base [plr] " .. PF .. "trap [plr] " .. PF .. "untrap [plr] ");
         Chat("/w " .. Admin.Name .. " " .. PF .. "virus [plr] " .. PF .. "unvirus [plr] " .. PF .. "ka/killaura [plr] " .. PF .. "unka/unkillaura [plr] " .. PF .. "void [plr] " .. PF .. "armory [plr] " .. PF .. "cars/carspawn " .. PF .. "opendoors ");
     end;
     if CMD2("kill") then
@@ -6729,15 +6865,19 @@ function UseRankedCommands(MESSAGE, Admin)
             if Args[2] == "all" then
                 KillPlayers(Players, Admin);
                 Chat("/w " .. Admin.Name .. " Success! Killed all.");
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used kill all.");
             elseif Args[2] == "inmates" then
                 KillPlayers(Teams.Inmates, Admin);
                 Chat("/w " .. Admin.Name .. " Success! Killed inmates.");
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used kill inmates");
             elseif Args[2] == "guards" then
                 KillPlayers(Teams.Guards, Admin);
                 Chat("/w " .. Admin.Name .. " Success! Killed guards.");
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used kill guards.");
             elseif Args[2] == "criminals" then
                 KillPlayers(Teams.Criminals, Admin);
                 Chat("/w " .. Admin.Name .. " Success! Killed criminals.");
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used kill criminals.");
             else
                 local Player = GetPlayer(Args[2], Admin);
                 if Player then
@@ -6748,6 +6888,7 @@ function UseRankedCommands(MESSAGE, Admin)
                     else
                         WarnProtected(Admin, Player, "kill");
                     end;
+                    AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used kill command on " .. Player.Name .. ". ")
                 else
                     Chat("/w " .. Admin.Name .. " " .. Args[2] .. " is not a valid player. Example - " .. PF .. "kill " .. RandomPlayer().Name:lower() .. " or " .. PF .. "kill " .. RandomTeam() .. " or " .. PF .. "kill all");
                 end;
@@ -6762,7 +6903,8 @@ function UseRankedCommands(MESSAGE, Admin)
             if Args[2] == "all" then
                 Tase(Players:GetPlayers());
                 Chat("/w " .. Admin.Name .. " Success! tased all");
-            task.wait(0.2)
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used tase all.");
+            task.wait(0.5)
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
@@ -6776,7 +6918,8 @@ function UseRankedCommands(MESSAGE, Admin)
                     if CheckProtected(Player, "killcmds") or Player == Admin then
                         AddToQueue(function()
                             Tase({Player});
-                            Chat("/w " .. Admin.Name .. " Success! tased player_placeholder ");
+                            Chat("/w " .. Admin.Name .. " Success! tased " .. Player.Name .. ". ");
+                            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used tase command on " .. Player.Name .. ". ");
             task.wait(0.5)
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
@@ -6865,6 +7008,7 @@ function UseRankedCommands(MESSAGE, Admin)
                 end
 	end
             Chat("/w " .. Admin.Name .. " Success! Opened doors!");
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used opendoors.");
         end
     end;       
     if CMD2("lk") or CMD2("loopkill") then
@@ -6878,6 +7022,8 @@ function UseRankedCommands(MESSAGE, Admin)
                 else
                     WarnProtected(Admin, Player, "lk");
                 end;
+                Chat("/w " .. Admin.Name .. " Success! Loopkilling " .. Player.Name .. ". ")
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used loopkill command on " .. Player.Name .. ". ");
             else
                 NotAValidPlayer("lk");
             end;
@@ -6894,6 +7040,8 @@ function UseRankedCommands(MESSAGE, Admin)
         else
             NotAValidPlayer("unlk");
         end;
+        Chat("/w " .. Admin.Name .. " Success! Unloopkilled " .. Player.Name .. ". ");
+        AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used unloopkill command on " .. Player.Name .. ". ");
     end;
     if CMD2("cars") or CMD2("car") or CMD2("carspawn") or CMD2("scar") or CMD2("spawncars") then
        local Player = GetPlayer(Args[2], Admin);
@@ -6901,6 +7049,7 @@ function UseRankedCommands(MESSAGE, Admin)
        spawncarsto(Player)
        end)
        Chat("/w " .. Admin.Name .. " Success! Brought a car to your location");
+       AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used carspawn command");
     end;
     if CMD2("arrest") then
         if AdminSettings.arrestcmds == true then
@@ -6912,6 +7061,7 @@ function UseRankedCommands(MESSAGE, Admin)
                 else
                     WarnProtected(Admin, Player, "arrest");
                 end;
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used arrest command on " .. Player.Name .. ". ");
             else
                 NotAValidPlayer("arrest");
             end;
@@ -6943,6 +7093,7 @@ function UseRankedCommands(MESSAGE, Admin)
         end;
     end;
     if CMD2("fling") then
+        Chat("/w " .. Admin.Name .. " This is a placeholder command, which means it will not work!");
         if AdminSettings.othercmds == true then
             local Player = GetPlayer(Args[2], Admin);
             if Player then
@@ -6961,6 +7112,7 @@ function UseRankedCommands(MESSAGE, Admin)
         end;
     end;
     if CMD2("sfling") then
+        Chat("/w " .. Admin.Name .. " This is a placeholder command, which means it will not work!");
         if AdminSettings.othercmds == true then
             local Player = GetPlayer(Args[2], Admin);
             if Player then
@@ -6979,6 +7131,7 @@ function UseRankedCommands(MESSAGE, Admin)
         end;
     end;
     if CMD2("keycard") or CMD2("key") then
+        Chat("/w " .. Admin.Name .. " This is a placeholder command, which means it will not work!");
         if AdminSettings.givecmds == true then
             local Player = GetPlayer(Args[2], Admin);
             if Player then
@@ -6997,6 +7150,8 @@ function UseRankedCommands(MESSAGE, Admin)
         end;
     end;
     if CMD2("handcuffs") or CMD2("cuffs") then
+        Chat("/w " .. Admin.Name .. " Error! This command is patched.");
+        --Humanoid glitch patched
         if AdminSettings.givecmds == true then
             local Player = GetPlayer(Args[2], Admin);
             if Player then
@@ -7181,6 +7336,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("nexus");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used nexus command on " .. Player.Name .. ". ");
         else
             WarnDisabled("nexus")
         end;
@@ -7199,6 +7355,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("tower");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used tower command on " .. Player.Name .. ". ");
         else
             WarnDisabled("tower");
         end;
@@ -7217,11 +7374,12 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("back");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used back command on " .. Player.Name .. ". ");
         else
             WarnDisabled("back");
         end;
     end;
-    if CMD2("base") then
+    if CMD2("base") or CMD2("crimbase") then
         if AdminSettings.tpcmds == true then
             local Player = GetPlayer(Args[2], Admin);
             if Player then
@@ -7235,6 +7393,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("base");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used criminal base command on " .. Player.Name .. ". ");
         else
             WarnDisabled("base");
         end;
@@ -7253,6 +7412,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("armory");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used armory command on " .. Player.Name .. ". ");
         else
             WarnDisabled("armory");
         end;
@@ -7271,6 +7431,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("yard");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used yard command on " .. Player.Name .. ". ");
         else
             WarnDisabled("yard");
         end;
@@ -7289,6 +7450,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("cells");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used cells command on " .. Player.Name .. ". ");
         else
             WarnDisabled("cells")
         end;
@@ -7307,6 +7469,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("cafe");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used cafe command on " .. Player.Name .. ". ");
         else
             WarnDisabled("cafe");
         end;
@@ -7325,6 +7488,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("ka");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used killaura command on " .. Player.Name .. ". ");
         else
             WarnDisabled("ka");
         end;
@@ -7338,6 +7502,7 @@ function UseRankedCommands(MESSAGE, Admin)
         else
             NotAValidPlayer("unka");
         end;
+        AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used unkillaura command on " .. Player.Name .. ". ");
     end;
     if CMD2("virus") then
         if AdminSettings.killcmds == true then
@@ -7353,6 +7518,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("virus");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used virus command on " .. Player.Name .. ". ");
         else
             WarnDisabled("virus");
         end;
@@ -7366,6 +7532,7 @@ function UseRankedCommands(MESSAGE, Admin)
         else
             NotAValidPlayer("virus");
         end;
+        AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used unvirus command on " .. Player.Name .. ". ");
     end;
     if CMD2("trap") then
         if AdminSettings.tpcmds == true then
@@ -7381,6 +7548,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("trap");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used trap command on " .. Player.Name .. ". ");
         else
             WarnDisabled("trap");
         end;
@@ -7398,6 +7566,7 @@ function UseRankedCommands(MESSAGE, Admin)
         else
             NotAValidPlayer("untrap");
         end;
+        AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used untrap command on " .. Player.Name .. ". ");
     end;
     if CMD2("void") then
         if AdminSettings.tpcmds == true then
@@ -7413,11 +7582,13 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("void");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name " Used void command on " .. Player.Name .. ". ");
         else
             WarnDisabled("void");
         end;
     end;
     if CMD2("ctp") then
+        Chat("/w " .. Admin.Name .. " This command is experimental!");
         if AdminSettings.tpcmds == true then
             local Player = GetPlayer(Args[2], Admin);
             if Player then
@@ -7460,12 +7631,13 @@ function UseRankedCommands(MESSAGE, Admin)
                                 Chat("/w " .. Player.Name .. " Disabled one shot for " .. Player.Name .. ".");
                             end;
                         else
-                            Chat("/w " .. Player.Name .. " I cannot do that right now.");
+                            Chat("/w " .. Player.Name .. " Error! This command is disabled.");
                         end;
                     end);
                 else
                     WarnProtected(Admin, Player, "oneshot");
                 end;
+                AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used oneshot command on " .. Player.Name .. ". ");
             else
                 NotAValidPlayer("oneshot");
             end;
@@ -7497,6 +7669,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("onepunch");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used onepunch command on " .. Player.Name .. ". ");
         else
             WarnDisabled("onepunch");
         end;
@@ -7512,19 +7685,9 @@ function UseRankedCommands(MESSAGE, Admin)
                             TeleportPlayers(Player, Admin);
                             Chat("/w " .. Admin.Name .. " Brought " .. Player.Name .. ".");
                             wait(1)
-    local player = game.Players.LocalPlayer
-    if player.TeamColor == BrickColor.new("Really red") then
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-        workspace.Remote.TeamEvent:FireServer("Bright blue")
-        local crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-        workspace['Criminals Spawn'].SpawnLocation.CFrame = crimspawnpoint
-    elseif player.TeamColor == BrickColor.new("Bright blue") then
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-        workspace.Remote.TeamEvent:FireServer("Bright blue")
-    else
-        workspace.Remote.TeamEvent:FireServer("Bright orange")
-    end
-                            wait(0.3)
+           game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
                             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
                         end);
                     end);
@@ -7534,6 +7697,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("bring");
             end;
+            AddLog("Success", "Ranked Player: " .. Admin.Name .. " Used bring command on " .. Player.Name .. ". ");
         else
             WarnDisabled("void");
         end;
@@ -7545,7 +7709,13 @@ function UseRankedCommands(MESSAGE, Admin)
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
                         pcall(function()
+                            local mysavedpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                             TeleportPlayers(Admin, Player);
+                            wait(1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
+           task.wait(.1)
+           game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+                            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
                         end);
                     end);
                 else
@@ -7554,6 +7724,7 @@ function UseRankedCommands(MESSAGE, Admin)
             else
                 NotAValidPlayer("goto");
             end;
+            AddLog("Success", "Ranked Player: "  .. Admin.Name .. " Used goto command to " .. Player.Name .. ". ");
         else
             WarnDisabled("goto");
         end;
@@ -9059,6 +9230,13 @@ rService.RenderStepped:Connect(function()
                 end
             end)
         end
+    end
+end)
+
+--// Fix inventory
+task.spawn(function()
+    while task.wait() do
+        game:GetService('StarterGui'):SetCoreGuiEnabled('Backpack', true)
     end
 end)
 
