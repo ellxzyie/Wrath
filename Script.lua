@@ -1203,6 +1203,7 @@ local function died()
     hasAlreadyDied = true
     SaveCameraPos()
     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+    print("Debug_Hasdied Saved CFrame")
     if player.TeamColor == BrickColor.new("Really red") then
         hasDiedasCriminals = true
 	if #game:GetService("Teams").Guards:GetPlayers() < 8 then
@@ -1225,15 +1226,17 @@ local function died()
     hasDiedasGuards = false
     else
         workspace.Remote.TeamEvent:FireServer("Bright orange")
-    end
-    diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)          
+    end 
+    print("Debug_Hasdied TeamEvent Handler Finished")   
+    --diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)      
 end
 
 local function characterAdded()
-    if diedpos then
+    if diedpos and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
         char = player.Character or player.CharacterAdded:Wait()
-        print("Autorespawning")
+        print("Debug_Respawning back to old position")
         char:WaitForChild("HumanoidRootPart").CFrame = diedpos
+        diedEvent:Disconnect()
         diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)
         if States.NowFlying then
             endFly()
@@ -1291,6 +1294,7 @@ local function characterAdded()
         end
         if States.AutoGivingGuns or States.AutoItems and not hasExecutedGuns then
         hasExecutedGuns = true
+        myarguments.gettingGuns = true
         print("debug_hasExecutedGuns has been set to true")
         if hasDiedasCriminals then
            if player.TeamColor == BrickColor.new("Really red") and game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and not myarguments.has_executedGuns then
@@ -1344,6 +1348,7 @@ local function characterAdded()
         end
         hasExecutedGuns = false
         print("debug_hasExecutedGuns has been set to false")
+        myarguments.gettingGuns = false
         else
           --Placeholder
         end
@@ -1396,19 +1401,22 @@ handle.Touched:Connect(function(part)
 end)
     end
     end)
+    else
+        diedEvent:Disconnect()
+        diedEvent = char:WaitForChild("Humanoid").Died:Connect(died)    
     end
     --Additional check to fully make sure player is on old position (Because sometimes autorespawn does not spawn back to old position and also in other script like tiger admin)
     task.spawn(function()
         task.wait(.05)
         print("Debug_task.wait .05")
-        if char.HumanoidRootPart.CFrame ~= diedpos and not myarguments.breaktigeradmin and not States.AutoGivingGuns and not States.AutoItems then
+        if char:WaitForChild("HumanoidRootPart").CFrame ~= diedpos and not myarguments.breaktigeradmin and not States.AutoGivingGuns and not States.AutoItems then
             repeat task.wait()
             if not LocalPlayer.Character:FindFirstChild("ForceField") then
                 task.wait(.1)
             end
             --SaveCameraPos()
             char:WaitForChild("HumanoidRootPart").CFrame = diedpos
-            until char.HumanoidRootPart.CFrame == diedpos
+            until char:FindFirstChild("HumanoidRootPart").CFrame == diedpos
             --LoadCameraPos()
         end
     end)
@@ -2916,7 +2924,7 @@ end)
 task.wait(.1)
 end
     end;
-    if CMD("antiarrest") or CMD("aar") then
+    if CMD("antiarrest") or CMD("aar") then  --Yes, I know, i can just use getconnections but its laggy as hell and crashes you, plus most executors dont support getconnections like krnl
         States.AntiArrest = not States.AntiArrest
         if States.AntiArrest then
         Notify("Success", "Enabled antiarrest", 2);
@@ -2964,18 +2972,21 @@ task.spawn(function()
     end
 end)
         while States.AntiArrest do
+            if player.TeamColor == BrickColor.new("Really red") and not States.FriendlyFire and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
+            oldTeamIsCriminals = true
+            elseif States.FriendlyFire or LocalPlayer.TeamColor == BrickColor.new("Medium stone grey") then
+            oldTeamIsCriminals = false
+            end
             pcall(function()
             if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.FriendlyFire then
-            if not myarguments.donotexecute_friendlyfireantiarrestkill and not myarguments.donotexecute_friendlyfireantiarrestkillplayers then
+            if not myarguments.donotexecute_friendlyfireantiarrestkill and not myarguments.donotexecute_friendlyfireantiarrestkillplayers and not myarguments.gettingGuns then
+            if LocalPlayer.Character.Head:FindFirstChildOfClass("BillboardGui") then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
-            if player.TeamColor == BrickColor.new("Really red") and not States.FriendlyFire then
-            oldTeamIsCriminals = true
             else
-            if oldTeamIsCriminals then
-            task.wait(.4)
-            end
-            oldTeamIsCriminals = false
+            task.wait()
+            SaveCameraPos()
+            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
             end
             end
             end
