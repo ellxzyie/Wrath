@@ -152,6 +152,7 @@ local Protected = {};
 local WhitelistedItems = {};
 local ArmorSpamFlags = {};
 local MeleeKilling = {};
+local TeleportKilling = {};
 local SpeedKilling = {};
 local Nukes = {};
 local SuperNukes = {};
@@ -251,13 +252,16 @@ local Commands = {
     "The default prefix is '.' ";
     "output -- shows the output";
     "=== KILL COMMANDS ===";
+    "INFO: -- Hostiles: If player holds guns (including taser), knife, hammer or does punching, they die";
     "kill [plr,team,hostiles] -- kills a player, team, hostiles, or all";
-    "mkill / meleekill [plr] -- melee kill player or all";
+    "mkill / meleekill [plr,all] -- melee kill player or all";
+    "tkill / teleportkill / telekill [plr,all] -- teleports underneath the player and kills them using melee events";
     "lk / loopkill [plr,team,hostiles] -- loopkills plr/team/all/hostiles";
-    "INFO: what is hostiles? hostiles is when a player holds any type of dangerous weapons and kill the player (also handcuffs because why not)";
     "unlk / unloopkill [plr,team,hostiles] -- stops loopkill";
     "mlk / meleeloopkill [plr,all] -- melee loopkil plr/all";
+    "tlk / teleportloopkill / telelk [plr,all] -- teleports underneath the player, uses melee events to kill player";
     "unmlk /unmeleeloopkill [plr,all] -- unmelee loopkill plr/all";
+    "untlk / unteleportloopkill / untelelk [plr,all] -- stops teleport loopkilling player/all";
     "nuke / kamikaze [plr] -- if player dies, everyone dies";
     "crashnuke / cnuke [plr] -- if player dies, SERVER CRASHES!";
     "chaosmode / chaos -- if any player dies, EVERYONE DIES";
@@ -328,7 +332,7 @@ local Commands = {
     "autofirerate / affr -- autofastfirerate";
     "=== COMMANDS FOR RANKED ===";
     "givecmds / gcmds [plr,all] -- gives a player commands or all";
-    "revokecmds / rcmds [plr] -- revokes command access from player";
+    "revokecmds / rcmds [plr,all] -- revokes command access from player or all";
     "getadmins -- gets all admins";
     "cla / clearadmins -- clears all admins";
     "asettings / as -- [killcmds/tpcmds/arrestcmds/givecmds/othercmds] [true, cmd enabled / false, cmd disabled]";
@@ -483,11 +487,12 @@ local Commands = {
     "vent [plr] -- teleports to vent";
     "tp [plr] [plr2] -- teleports plr to plr2";
     "trap [plr] -- traps plr";
+    "untrap [plr] -- untraps plr";
+    "cleartrapped / cltr -- clears all trapped players";
     "dumpster / scorp [plr] -- teleports to dumpster";
     "toilet [plr] -- teleports to toilet";
     "snack [plr] -- teleports to vending machine";
     "flag [plr] -- teleports to flag";
-    "untrap [plr] untraps plr";
     "void [plr] -- teleports plr to void";
     "towaypoint / tw [name] -- teleports to a certain spawnpoint";   
     "wp / setwaypoint [name] -- set spawnpoint where you stand ";   
@@ -2492,6 +2497,29 @@ function MeleeKill(PLR)
     end;
 end;
 
+
+function TeleportKill(PLR)
+    repeat task.wait()
+    if PLR.Character:FindFirstChild("ForceField") then
+        break
+    end
+    if LocalPlayer.Character and PLR.Character then
+        local MyHead = LocalPlayer.Character:FindFirstChild("Head");
+        local TheirHead = PLR.Character:FindFirstChild("Head");
+        if MyHead and TheirHead then
+            LocalPlayer.Character:SetPrimaryPartCFrame(TheirHead.CFrame * CFrame.new(0, -12, 0));
+            pcall(function()
+                LocalPlayer.Character.Humanoid.Sit = false;
+            end);
+        end;
+    end
+    task.wait();
+    for i = 1, 30 do
+        MeleeEvent(PLR);
+    end;
+    until PLR.Character.Humanoid.Health == 0
+end;
+
 function FPSBoost()
     game.Lighting.Brightness = 30
     for i,v in pairs(workspace:GetDescendants()) do
@@ -3933,15 +3961,17 @@ end
         States.KillInmates = false;
         States.KillCriminals = false;
         States.MeleeAll = false;
+        States.TeleKillAll = false;
         States.SpeedKillAll = false;
         States.SpeedKillGuards = false;
         States.SpeedKillInmates = false;
         States.SpeedKillCriminals = false;
         MeleeKilling = {};
+        TeleportKilling = {};
         Loopkilling = {};
         SpeedKilling = {};
         Notify("Success", "Cleared all loop-kills.", 2);
-    end
+    end;
     if CMD("view") then
         pcall(function()
             CurrentlyViewing.Connection:Disconnect();
@@ -5470,7 +5500,7 @@ end
             Notify("Success", "Prefix was changed to: " .. Prefix, 2);
         end;
     end;
-    if CMD("mkill") or CMD("meleekill") or CMD("tkill") then
+    if CMD("mkill") or CMD("meleekill") or CMD("mk") then
         SavePos();
         if Args[2] == "all" then
             for i,v in pairs(Players:GetPlayers()) do
@@ -5484,6 +5514,26 @@ end
             if Player then
                 MeleeKill(Player);
                 Notify("Success", "Melee killed " .. Player.Name .. ".", 2);
+            else
+                Notify("Error", Args[2] .. " is not a valid player.", 2);
+            end;
+        end;
+        LoadPos();
+    end;
+    if CMD("tkill") or CMD("telekill") or CMD("teleportkill") or CMD("tk") then
+        SavePos();
+        if Args[2] == "all" then
+            for i,v in pairs(Players:GetPlayers()) do
+                if v ~= LocalPlayer and CheckProtected(v, "killcmds") then
+                    TeleportKill(v)
+                end;
+            end;
+            Notify("Success", "Teleport killed everyone.", 2);
+        else
+            local Player = GetPlayer(Args[2], LocalPlayer);
+            if Player then
+                TeleportKill(Player);
+                Notify("Success", "Teleport killed " .. Player.Name .. ".", 2);
             else
                 Notify("Error", Args[2] .. " is not a valid player.", 2);
             end;
@@ -5660,7 +5710,7 @@ end
         print("====== END ======");
         Notify("Success", "Type /console or F9 to see loop melee killing.", 2);
     end;
-    if CMD("mlk") or CMD("meleeloopkill") or CMD("tlk") then
+    if CMD("mlk") or CMD("meleeloopkill") or CMD("meleelk") then
         if Args[2] == "all" then
             States.MeleeAll = true;
             Notify("Success", "Melee loop-killing all.", 2);
@@ -5674,7 +5724,21 @@ end
             end;
         end;
     end;
-    if CMD("unmlk") or CMD("unmeleeloopkill") or CMD("untlk") then
+    if CMD("tlk") or CMD("teleportloopkill") or CMD("telelk") then
+        if Args[2] == "all" then
+            States.TeleKillAll = true;
+            Notify("Success", "Teleport loop-killing all.", 2);
+        else
+            local Player = GetPlayer(Args[2], LocalPlayer);
+            if Player then
+                TeleportKilling[Player.UserId] = Player;
+                Notify("Success", "Teleport loop-killing " .. Player.Name .. ".")
+            else
+                Notify("Error", Args[2] .. " is not a valid player.", 2);
+            end;
+        end;
+    end;
+    if CMD("unmlk") or CMD("unmeleeloopkill") or CMD("unmeleelk") then
         if Args[2] == "all" then
             States.MeleeAll = false;
             MeleeKilling = {};
@@ -5684,6 +5748,21 @@ end
             if Player then
                 MeleeKilling[Player.UserId] = nil;
                 Notify("Success", "Stopped melee loop-killing " .. Player.Name .. ".")
+            else
+                Notify("Error", Args[2] .. " is not a valid player.", 2);
+            end;
+        end;
+    end;
+    if CMD("untlk") or CMD("unteleportloopkill") or CMD("untelelk") then
+        if Args[2] == "all" then
+            States.TeleKillAll = false;
+            MeleeKilling = {};
+            Notify("Success", "Stopped Teleport loop-killing all.", 2);
+        else
+            local Player = GetPlayer(Args[2], LocalPlayer);
+            if Player then
+                MeleeKilling[Player.UserId] = nil;
+                Notify("Success", "Stopped Teleport loop-killing " .. Player.Name .. ".")
             else
                 Notify("Error", Args[2] .. " is not a valid player.", 2);
             end;
@@ -8189,29 +8268,7 @@ end);
 --// Melee Kills:
 task.spawn(function()
     while task.wait() do
-        if next(MeleeKilling) then
-            local DoSavePos = false;
-            SavePos();
-            for i,v in next, MeleeKilling do
-                if v.Character and CheckProtected(v, "killcmds") then
-                    local Humanoid = v.Character:FindFirstChild("Humanoid");
-                    local ForceField = v.Character:FindFirstChild("ForceField");
-                    if Humanoid and Humanoid.Health > 0 and not ForceField then
-                        MeleeKill(v);
-                        DoSavePos = true;
-                    end;
-                end;
-            end;
-            if DoSavePos then
-                LoadPos();
-            end;
-        end;
-    end;
-end);
-
---// Melee Kill All:
-task.spawn(function()
-    while task.wait(0.03) do
+        pcall(function()
         if States.MeleeAll then
             if next(Players:GetPlayers()) then
                 local DoSavePos = false;
@@ -8233,6 +8290,70 @@ task.spawn(function()
                 end;
             end;
         end;
+        if next(MeleeKilling) then
+            local DoSavePos = false;
+            SavePos();
+            for i,v in next, MeleeKilling do
+                if v.Character and CheckProtected(v, "killcmds") then
+                    local Humanoid = v.Character:FindFirstChild("Humanoid");
+                    local ForceField = v.Character:FindFirstChild("ForceField");
+                    if Humanoid and Humanoid.Health > 0 and not ForceField then
+                        MeleeKill(v);
+                        DoSavePos = true;
+                    end;
+                end;
+            end;
+            if DoSavePos then
+                LoadPos();
+            end;
+        end;
+        end)
+    end;
+end);
+
+--// Teleport Kills:
+task.spawn(function()
+    while task.wait() do
+      pcall(function()
+        if States.TeleKillAll then
+            if next(Players:GetPlayers()) then
+                local DoSavePos = false;
+                SavePos();
+                for i,v in pairs(Players:GetPlayers()) do   
+                    if v ~= LocalPlayer then
+                        if v.Character and not TeleportKilling[v.UserId] and CheckProtected(v, "killcmds") then
+                            local Humanoid = v.Character:FindFirstChild("Humanoid");
+                            local ForceField = v.Character:FindFirstChild("ForceField");
+                            if Humanoid and Humanoid.Health > 0 and not ForceField then
+                                TeleportKill(v);
+                                DoSavePos = true;
+                            end;
+                        end;
+                    end;
+                end;
+                if DoSavePos then
+                    LoadPos();
+                end;
+            end;
+        end;
+        if next(TeleportKilling) then
+            local DoSavePos = false;
+            SavePos();
+            for i,v in next, TeleportKilling do
+                if v.Character and CheckProtected(v, "killcmds") then
+                    local Humanoid = v.Character:FindFirstChild("Humanoid");
+                    local ForceField = v.Character:FindFirstChild("ForceField");
+                    if Humanoid and Humanoid.Health > 0 and not ForceField then
+                        TeleportKill(v);
+                        DoSavePos = true;
+                    end;
+                end;
+            end;
+            if DoSavePos then
+                LoadPos();
+            end;
+        end;
+      end)
     end;
 end);
 
