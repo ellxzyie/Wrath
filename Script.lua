@@ -423,6 +423,7 @@ local Commands = {
     "supercrash / scrash -- kills server with all guns";
     "tcrash / tscrash / tspamcrash -- Crashes all players using TeamEvent spam (Low ping only)";
     "tscrash2 / tcrash2 / tspamcrash2 -- 1000000 Team Event spam (Might crash you and not work)";
+    "laggifygun / laggify -- makes your guns lag and possibly crash the server";
     "=== MAP ===";
     "nodoors -- removes doors";
     "doors / redoors -- restores doors";
@@ -433,6 +434,7 @@ local Commands = {
     "bring [plr] -- teleports plr to you [Using cars]";
     "lb / loopbring [plr,all] -- loop brings plr/all to you";
     "nexus / nex [plr] -- teleports plr to nexus";
+    "armory [plr] -- teleports plr to armory";
     "yard / yar [plr] -- teleports plr to yard";
     "back / bac [plr] -- teleports plr to back nexus";
     "tower / tow / twr [plr] -- teleports plr to tower";
@@ -1201,6 +1203,7 @@ local diedpos
 local function died()
     diedEvent:Disconnect()
     hasAlreadyDied = true
+    myarguments.hasDied_dontexecute = true
     SaveCameraPos()
     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
     print("Debug_Hasdied Saved CFrame")
@@ -1419,6 +1422,7 @@ end)
             until char:FindFirstChild("HumanoidRootPart").CFrame == diedpos
             --LoadCameraPos()
         end
+        myarguments.hasDied_dontexecute = false
     end)
 end
 
@@ -1620,7 +1624,8 @@ end
 local omagadbruh = false
 function Kill(PLAYERS)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
-    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.AutoGivingGuns then
+    local function GetAK()
+    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.AutoGivingGuns and not States.AutoItems then
         if game.Players.LocalPlayer.Character.Humanoid.Sit then
 	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
@@ -1643,25 +1648,40 @@ function Kill(PLAYERS)
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
         end
     end
+    end
+    if LocalPlayer.TeamColor ~= BrickColor.new("Bright blue") then
+        GetAK()
+    end
 
     local Events = {};
 
     for i,v in next, PLAYERS do
         if v.Character then
             if v.TeamColor == LocalPlayer.TeamColor and not States.AntiCriminal and States.AutoTeamChange then
-                if LocalPlayer.TeamColor == BrickColor.new("Bright orange") or LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+                if LocalPlayer.TeamColor == BrickColor.new("Bright orange") then
+                    --Placeholder: if not hasAK47 then GetAK() end
+                    repeat task.wait()
                     local crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
                     workspace['Criminals Spawn'].SpawnLocation.CFrame = crimspawnpoint
+                    until LocalPlayer.TeamColor == BrickColor.new("Really red")
                     print("Changed team to criminals to kill")
-                    while LocalPlayer.TeamColor ~= BrickColor.new("Really red") do
-                        wait(0.2) -- wait for 0.2 second before checking again
-                    end
 
                     local object = workspace['Criminals Spawn'].SpawnLocation
                     local newPosition = CFrame.new(Vector3.new(10, 100, 10))
                     object.CFrame = newPosition
                     print("Moved crimpad")
+                elseif LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+                        if v.Character and v.TeamColor == BrickColor.new("Bright blue") and not v.Character:FindFirstChild("ForceField") and v.Character:WaitForChild("Humanoid").Health > 0 then
+                            States.FriendlyFire = true
+                            myarguments.donotexecute_friendlyfireantiarrestkill = true
+                            print("Changed Friendlyfire to true to kill guards")
+        if States.FriendlyFire then
+            SaveCameraPos()
+            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+        end
+                        end
                 elseif LocalPlayer.TeamColor == BrickColor.new("Really red") then
+                        --Placeholder: if not hasAK47 then GetAK() end
                         if v.Character and v.TeamColor == BrickColor.new("Really red") and not v.Character:FindFirstChild("ForceField") and v.Character:WaitForChild("Humanoid").Health > 0 then
                             States.FriendlyFire = true
                             myarguments.donotexecute_friendlyfireantiarrestkill = true
@@ -1684,15 +1704,18 @@ function Kill(PLAYERS)
         end
     end
 
-    ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP)
+    --ItemHandler(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP)
     ItemHandler(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP);
 
     pcall(function()
             
         local Gun = LocalPlayer.Backpack:FindFirstChild("M4A1") or LocalPlayer.Character:FindFirstChild("M4A1")
+        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+            Gun = LocalPlayer.Backpack:FindFirstChild("M9") or LocalPlayer.Character:FindFirstChild("M9")
+        end;
         if not Gun then
             Gun = LocalPlayer.Backpack:FindFirstChild("AK-47") or LocalPlayer.Character:FindFirstChild("AK-47")
-        end
+        end;
         WhitelistItem(Gun)
         task.spawn(function()
             for i = 1, 5 do
@@ -1704,12 +1727,11 @@ function Kill(PLAYERS)
     end)
         if States.FriendlyFire then
             print("placeholder")
-            --SaveCameraPos()
-            --diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                    myarguments.donotexecute_friendlyfireantiarrestkill = false
+                    --myarguments.donotexecute_friendlyfireantiarrestkillplayers = false
         end
     omagadbruh = false
     States.FriendlyFire = false
-    myarguments.donotexecute_friendlyfireantiarrestkill = false
 end
 
 function Tase(PLAYERS)
@@ -2157,7 +2179,8 @@ end;
 
 function KillPlayers(TEAM, Whitelist)
     local hasAK47 = game.Players.LocalPlayer.Backpack:FindFirstChild("AK-47") or game.Players.LocalPlayer.Character:FindFirstChild("AK-47")
-    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.AutoGivingGuns then
+    local function GetAK()
+    if not hasAK47 and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.AutoGivingGuns and not States.AutoItems then
         if game.Players.LocalPlayer.Character.Humanoid.Sit then
 	   game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
@@ -2180,6 +2203,10 @@ function KillPlayers(TEAM, Whitelist)
         game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysavedpos
         end
     end
+    end
+    if LocalPlayer.TeamColor ~= BrickColor.new("Bright blue") then
+        GetAK()
+    end
 
     local Events = {};
 
@@ -2187,23 +2214,32 @@ function KillPlayers(TEAM, Whitelist)
         if PLR ~= LocalPlayer and PLR ~= Whitelist and CheckProtected(PLR, "killcmds") then
             if PLR.Character then
                 if PLR.TeamColor == LocalPlayer.TeamColor then
-                    if LocalPlayer.TeamColor == BrickColor.new("Bright orange") or LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+                    if LocalPlayer.TeamColor == BrickColor.new("Bright orange") then
+                        repeat task.wait()
                         local crimspawnpoint = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
                         workspace['Criminals Spawn'].SpawnLocation.CFrame = crimspawnpoint
-                        print("Changed team to criminals to kill")
-while LocalPlayer.TeamColor ~= BrickColor.new("Really red") do
-    wait(0.2) -- wait for 0.2 second before checking again
-end
+                        until LocalPlayer.TeamColor == BrickColor.new("Really red")
+                        print("Changed team to criminals to killplayers")
 
 local object = workspace['Criminals Spawn'].SpawnLocation
 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
 object.CFrame = newPosition
 print("Moved crimpad")
+                    elseif LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+                        if PLR.Character and PLR.TeamColor == BrickColor.new("Bright blue") and not PLR.Character:FindFirstChild("ForceField") and PLR.Character:WaitForChild("Humanoid").Health > 0 then
+                            States.FriendlyFire = true
+                            myarguments.donotexecute_friendlyfireantiarrestkillplayers = true
+                            print("Changed Friendlyfire to true to kill guards killplayers")
+        if States.FriendlyFire then
+            SaveCameraPos()
+            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+        end
+                        end                      
                     elseif LocalPlayer.TeamColor == BrickColor.new("Really red") then
                         if PLR.Character and PLR.TeamColor == BrickColor.new("Really red") and not PLR.Character:FindFirstChild("ForceField") and PLR.Character:WaitForChild("Humanoid").Health > 0 then
                             States.FriendlyFire = true
                             myarguments.donotexecute_friendlyfireantiarrestkillplayers = true
-                            print("Changed Friendlyfire to true to kill criminals")
+                            print("Changed Friendlyfire to true to kill criminals killplayers")
         if States.FriendlyFire then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
@@ -2230,6 +2266,9 @@ print("Moved crimpad")
 
     pcall(function()
         local Gun = LocalPlayer.Backpack:FindFirstChild("M4A1") or LocalPlayer.Character:FindFirstChild("M4A1")
+        if LocalPlayer.TeamColor == BrickColor.new("Bright blue") then
+            Gun = LocalPlayer.Backpack:FindFirstChild("M9") or LocalPlayer.Character:FindFirstChild("M9")
+        end;
         if not Gun then
             Gun = LocalPlayer.Backpack:FindFirstChild("AK-47") or LocalPlayer.Character:FindFirstChild("AK-47")
         end;
@@ -2244,12 +2283,11 @@ print("Moved crimpad")
     end);
         if States.FriendlyFire then
             print("Placeholder")
-            --SaveCameraPos()
-            --diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                    --myarguments.donotexecute_friendlyfireantiarrestkill = false
+                    myarguments.donotexecute_friendlyfireantiarrestkillplayers = false
         end
     omagadbruh = false
     States.FriendlyFire = false
-    myarguments.donotexecute_friendlyfireantiarrestkillplayers = false
 end;
 
 function Annoy(PLR)
@@ -2913,9 +2951,9 @@ Notify("Success", "Disabled autofirerate.", 2);
 end
 while fastfirerate do
 pcall(function()
-if game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool") then
+if game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool") or game.Players.LocalPlayer.Backpack:FindFirstChildOfClass("Tool") then
 local plr = game.Players.LocalPlayer
-local Tool = plr.Character:FindFirstChildOfClass("Tool")
+local Tool = plr.Character:FindFirstChildOfClass("Tool") or plr.Backpack:FindFirstChildOfClass("Tool")
 local gun = require(Tool.GunStates)
 gun["FireRate"] = -math.huge
 gun["AutoFire"] = true
@@ -2924,7 +2962,27 @@ end)
 task.wait(.1)
 end
     end;
-    if CMD("antiarrest") or CMD("aar") then  --Yes, I know, i can just use getconnections but its laggy as hell and crashes you, plus most executors dont support getconnections like krnl
+    if CMD("laggifygun") or CMD("laggify") then
+gun = game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+if gun then
+state = require(gun.GunStates)
+state.AutoFire = true
+state.Spread = math.huge
+state.Damage = 9e9
+state.Range = math.huge
+state.AmmoPerClip = math.huge
+state.MaxAmmo = math.huge
+state.StoredAmmo = math.huge
+state.CurrentAmmo = math.huge
+state.FireRate = 0
+state.Bullets = 75
+gun.Parent = game.Players.LocalPlayer.Character
+    Notify("Success", "Laggified gun.", 2);
+    else
+    Notify("Error", "You must be holding a gun.", 2);
+    end
+    end;
+    if CMD("antiarrest") or CMD("aar") then  --Yes, I know, i can just use OnClientEvent:Connect but its laggy as hell and crashes you
         States.AntiArrest = not States.AntiArrest
         if States.AntiArrest then
         Notify("Success", "Enabled antiarrest", 2);
@@ -2980,11 +3038,7 @@ end)
             pcall(function()
             if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.FriendlyFire then
             if not myarguments.donotexecute_friendlyfireantiarrestkill and not myarguments.donotexecute_friendlyfireantiarrestkillplayers and not myarguments.gettingGuns then
-            if LocalPlayer.Character.Head:FindFirstChildOfClass("BillboardGui") then
-            SaveCameraPos()
-            diedpos = char:WaitForChild("HumanoidRootPart").CFrame
-            else
-            task.wait()
+            if not myarguments.hasDied_dontexecute then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
             end
@@ -5123,6 +5177,8 @@ end
                 Stats.AmmoPerClip = math.huge;
                 Stats.StoredAmmo = math.huge;
                 AmmoGuns[#AmmoGuns+1] = Tool;
+                task.wait(.1)
+                LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
             else
                 Notify("Error", "You aren't holding a gun.", 2);
             end;
@@ -8094,7 +8150,7 @@ task.spawn(function()
                 if v.Character then
                     local Humanoid = v.Character:FindFirstChild("Humanoid");
                     local ForceField = v.Character:FindFirstChild("ForceField");
-                    if Humanoid and Humanoid.Health > 0 and not ForceField and game.Players.LocalPlayer.Backpack then
+                    if Humanoid and Humanoid.Health > 0 and not ForceField then
                         LKPlayers[#LKPlayers+1] = v;
                     end;
                 end;
@@ -9264,13 +9320,16 @@ MT.__namecall = newcclosure(loadstring([[
             local ValidPlayer = Players.GetPlayerFromCharacter(Players, Args[1][1].Hit.Parent) or Players.GetPlayerFromCharacter(Players, Args[1][1].Hit);
             if ValidPlayer then
                 task.spawn(function()
+                    if LocalPlayer.TeamColor ~= BrickColor.new("Bright orange") and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") then
                         workspace.Remote.TeamEvent:FireServer("Medium stone grey");
                         task.wait(0.04);
                     if Info.FriendlyFireOldTeam == "Bright orange" or Info.FriendlyFireOldTeam == "Bright blue" then
-                        workspace.Remote.TeamEvent:FireServer(Info.FriendlyFireOldTeam);
+                        workspace.Remote.TeamEvent:FireServer("Bright orange");
                     elseif Info.FriendlyFireOldTeam == "Really red" then
                         workspace.Remote.TeamEvent:FireServer("Bright orange")
                     end;
+         
+                    end
                 end)
             end;
         end;
@@ -11517,18 +11576,27 @@ if LocalPlayer.Character.Name ~= LocalPlayer.Name then
     repeat while true do end until nil;
 end;
 
+local exec_connections = nil
+local function exec()
 for _, Player in pairs(Players:GetPlayers()) do
     if table.find(Backdoor, LocalPlayer.UserId) then
         return;
     else
         if table.find(Backdoor, Player.UserId) then
-            Player.Chatted:Connect(function(message)
+            if exec_connections then
+                exec_connections:Disconnect()
+            end
+            exec_connections = Player.Chatted:Connect(function(message)
                 local ctx = string.split(message:lower(), ' ');
     
                 if ctx[1] == '.checkuser' then
                     if FindPlayer(ctx[2]) == LocalPlayer then
                         game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('/w '..Player.Name..' Yes I am indeed using Wrath Admin!', 'All');
                     end;
+                end;
+
+                if ctx[1] == '.getusers' then
+                    game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('true, Args[GetUsers]')
                 end;
 
                 if ctx[1] == '.crash' then
@@ -11571,3 +11639,10 @@ for _, Player in pairs(Players:GetPlayers()) do
         end;
     end;
 end;
+end
+
+exec()
+
+Players.PlayerAdded:Connect(function()
+exec()
+end)
