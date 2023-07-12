@@ -294,6 +294,7 @@ local Commands = {
     "sa [plr] -- spam arrest plr";
     "unsa / breaksa -- breaks spam arrest";
     "arrest / ar [plr,all] [number] -- arrests player with specified number of arrests (defaults to 1 if not specified)";
+    "harrest / har [plr,all] [number] -- arrests player but hidden underground so no one suspects a thing";
     "autoarrest / autoar -- automatically arrests all players";
     "breakarrest / ba -- emergency stop if you cant arrest the player (either flying, speedhacks, or player keeps resetting)";
     "aa / arrestaura -- arrest aura";
@@ -642,9 +643,9 @@ function ArrestEvent(PLR, TIMES)
                 task.spawn(function()
                     workspace.Remote.arrest:InvokeServer(PLR.Character:FindFirstChildWhichIsA("Part"));
                 end);
-                pcall(function()
-                    LocalPlayer.Character.Humanoid.Sit = false;
-                end);
+                --pcall(function() -- Placeholder
+                    --LocalPlayer.Character.Humanoid.Sit = false;
+                --end);
                 if PLR.TeamColor.Name ~= "Really red" or not IllegalRegion(PLR) or not Players:FindFirstChild(PLR.Name) then
                     break
                 end;
@@ -674,14 +675,25 @@ function Arrest(PLR, TIMES)
         else
             pcall(function()
                 while not PLR.Character.Head:FindFirstChildOfClass("BillboardGui") do
+                pcall(function()
                 LocalPlayer.Character.Humanoid.Sit = false;
-                LocalPlayer.Character:SetPrimaryPartCFrame(PLR.Character.Head.CFrame * CFrame.new(0, 0, 1));
+                end)
+                if myarguments.arrestposition2 then
+                    LocalPlayer.Character:SetPrimaryPartCFrame(PLR.Character.Head.CFrame * CFrame.new(0, -10, -1));
+                else
+                    LocalPlayer.Character:SetPrimaryPartCFrame(PLR.Character.Head.CFrame * CFrame.new(0, 0, 1));
+                end
                 task.wait()
                 coroutine.wrap(ArrestEvent)(PLR, 1);
-                if PLR.TeamColor == BrickColor.new("Bright blue") or PLR.TeamColor == BrickColor.new("Medium stone grey") or myarguments.breakarrest or not IllegalRegion(PLR) or not Players:FindFirstChild(PLR.Name) then
+                if PLR.TeamColor == BrickColor.new("Bright blue") or PLR.TeamColor == BrickColor.new("Medium stone grey") or myarguments.breakarrest or not Players:FindFirstChild(PLR.Name) then
+                    print("Debug_ArrestPlayer break")
+                    break
+                end
+                if not IllegalRegion(PLR) and LocalPlayer.TeamColor ~= BrickColor.new("Really red") then
                     break
                 end
                 end
+                print("Debug_Arrest is done")
             end);
         end;
     end);
@@ -1761,16 +1773,16 @@ function Tase(PLAYERS)
         if not LocalPlayer.Backpack:FindFirstChild("Taser") then
                workspace.Remote.TeamEvent:FireServer("Bright blue")
         end;
-        repeat task.wait() until game.Players.LocalPlayer.TeamColor == BrickColor.new("Bright blue")
+        repeat task.wait() until LocalPlayer.Backpack:FindFirstChild("Taser") or LocalPlayer.Character:FindFirstChild("Taser")
         local Gun = LocalPlayer.Backpack:FindFirstChild("Taser") or LocalPlayer.Character:FindFirstChild("Taser")
         WhitelistItem(Gun);
-        task.spawn(function()
-            for i = 1, 5 do
-                rStorage.ReloadEvent:FireServer(Gun);
-                task.wait(1/2);
-            end;
-        end);
-
+        --task.spawn(function() -- Placeholder (Might be useful later)
+            --for i = 1, 5 do
+                --rStorage.ReloadEvent:FireServer(Gun);
+                --task.wait(1/2);
+            --end;
+        --end);
+        rStorage.ReloadEvent:FireServer(Gun);
         rStorage.ShootEvent:FireServer(Events, Gun)
     end);
 end;
@@ -2500,21 +2512,27 @@ end;
 
 function TeleportKill(PLR)
     repeat task.wait()
-    if PLR.Character:FindFirstChild("ForceField") then
+    if PLR.Character:FindFirstChild("ForceField") or myarguments.breaktelekill then
+        myarguments.breaktelekill = false
         break
     end
     if LocalPlayer.Character and PLR.Character then
         local MyHead = LocalPlayer.Character:FindFirstChild("Head");
         local TheirHead = PLR.Character:FindFirstChild("Head");
         if MyHead and TheirHead then
+            if PLR.Character:FindFirstChild("Humanoid").Sit then
+                LocalPlayer.Character:SetPrimaryPartCFrame(TheirHead.CFrame * CFrame.new(0, -8, 0));
+                print("Debug_Player is sitting args_function telekill players")
+            else
             LocalPlayer.Character:SetPrimaryPartCFrame(TheirHead.CFrame * CFrame.new(0, -12, 0));
+            end;
             pcall(function()
                 LocalPlayer.Character.Humanoid.Sit = false;
             end);
         end;
     end
     task.wait();
-    for i = 1, 30 do
+    for i = 1, 15 do
         MeleeEvent(PLR);
     end;
     until PLR.Character.Humanoid.Health == 0
@@ -3047,10 +3065,10 @@ end)
 task.wait()
 end 
         end)
---// Anti Arrest: (Yes, i moved it into here because performance issues on my garbage tablet that has 20 fps, Maybe too much while true do loops cause performance issues IDK)
+--// Anti Arrest: (Like the actual anti arrest part)
 task.spawn(function()
-    while States.AntiArrest do task.wait(0.03)
-        if States.AntiArrest then
+    while States.AntiArrest do task.wait(0.05)
+        if States.AntiArrest and LocalPlayer.TeamColor ~= BrickColor.new("Bright blue") then
 	    for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
 		v:Disable()
 	    end
@@ -3066,7 +3084,7 @@ end)
             pcall(function()
             if not isTeleportingToOldPosAndHasNoForceField and not hasAlreadyDied and LocalPlayer.TeamColor ~= BrickColor.new("Medium stone grey") and not States.FriendlyFire then
             if not myarguments.donotexecute_friendlyfireantiarrestkill and not myarguments.donotexecute_friendlyfireantiarrestkillplayers and not myarguments.gettingGuns then
-            if not myarguments.hasDied_dontexecute then
+            if not myarguments.hasDied_dontexecute and LocalPlayer.TeamColor ~= BrickColor.new("Bright blue") then
             SaveCameraPos()
             diedpos = char:WaitForChild("HumanoidRootPart").CFrame
             end
@@ -4492,6 +4510,34 @@ end
             task.wait();
         end;
     end;
+    if CMD("harrest") or CMD("har") then
+        SavePos();
+        myarguments.arrestposition2 = true
+        local Player = GetPlayer(Args[2], LocalPlayer);
+        local Times = tonumber(Args[3]);
+        Times = Times or 1;
+        if Player then
+            Arrest(Player, Times);
+            Notify("Success", "Arrested " .. Player.Name .. ".", 2);
+        end;
+        if Args[2] == "all" then
+            for i,v in pairs(Players:GetPlayers()) do
+                if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") then
+                    if (v.TeamColor.Name == "Bright orange" and IllegalRegion(v)) or v.TeamColor.Name == "Really red" then
+                        Arrest(v, Times);
+                    end;
+                end;
+            end;
+            Notify("Success", "Arrested everyone.", 2);
+        elseif not Player then
+            Notify("Error", Args[2] .. " is not a valid player.", 2);
+        end;
+        for i = 1, 10 do
+            LoadPos();
+            task.wait();
+        end;
+        myarguments.arrestposition2 = false
+    end;
     if CMD("breakarrest") or CMD("ba") then
         myarguments.breakarrest = true
         Notify("Success", "Stopped arrest.", 2);
@@ -4788,6 +4834,26 @@ end
     if CMD("aa") or CMD("arrestaura") then
         States.ArrestAura = not States.ArrestAura;
         Notify("Success", "Toggled arrest aura to " .. tostring(States.ArrestAura) .. ".", 2);
+        if States.ArrestAura then
+    while States.ArrestAura do task.wait() -- I moved it here to prevent having too much while true do loops and increase performance
+        if States.ArrestAura then
+            for i,v in pairs(Players:GetPlayers()) do
+                if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") then
+                    if LocalPlayer.Character and v.Character and v.TeamColor ~= BrickColor.new("Bright blue") and v.TeamColor ~= BrickColor.new("Medium stone grey") then
+                        local LHead, VHead = LocalPlayer.Character:FindFirstChildWhichIsA("BasePart"), v.Character:FindFirstChildWhichIsA("BasePart")
+                        if LHead and VHead then
+                            if (LHead.Position-VHead.Position).Magnitude <= 50 then
+                              if IllegalRegion(v) or v.TeamColor == BrickColor.new("Really red") then
+                                ArrestEvent(v);
+                              end
+                            end;
+                        end;
+                    end;
+                end;
+            end;
+        end;
+    end;
+        end
     end;
     if CMD("antifling") or CMD("afling") then
         States.AntiFling = not States.AntiFling;
@@ -5597,9 +5663,22 @@ end
             task.wait(0.5)
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
+                    SaveCameraPos()
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
 		    workspace.Remote.TeamEvent:FireServer(SavedOldTeam.Name)
                     LoadCameraPos()
+                else
+                      diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 repeat
+                                 SaveCameraPos()
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 LoadCameraPos()
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
         else
@@ -5609,8 +5688,22 @@ end
                 Notify("Success", "Tased " .. Player.Name .. ".", 2);
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
+                    SaveCameraPos()
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
 		    workspace.Remote.TeamEvent:FireServer(SavedOldTeam.Name)
+                    LoadCameraPos()
+                else 
+                      diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 repeat
+                                 SaveCameraPos()
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 LoadCameraPos()
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
             else
@@ -5693,6 +5786,26 @@ end
     if CMD("ma") or CMD("meleeaura") then
         States.MeleeAura = not States.MeleeAura
         Notify("Success", "Toggled melee aura to " .. tostring(States.MeleeAura) .. ".", 2);
+        if States.MeleeAura then -- Moved it here because to reduce the amount of while true do loops constantly running even when not used, and probably boost fps
+    while States.MeleeAura do task.wait()
+        if States.MeleeAura then
+            for i,v in pairs(Players:GetPlayers()) do
+                if v ~= LocalPlayer and CheckProtected(v, "killcmds") then
+                    if LocalPlayer.Character and v.Character then
+                        local LHead, VHead = LocalPlayer.Character:FindFirstChildWhichIsA("BasePart"), v.Character:FindFirstChildWhichIsA("BasePart")
+                        if LHead and VHead then
+                            if (LHead.Position-VHead.Position).Magnitude <= 50 then
+                                for i = 1, 5 do
+                                    MeleeEvent(v);
+                                end;
+                            end;
+                        end;
+                    end;
+                end;
+            end;
+        end;
+    end;
+        end
     end;
     if CMD("getlt") or CMD("getlooptase") then
         print("====== LOOP TASING ======")
@@ -5756,12 +5869,14 @@ end
     if CMD("untlk") or CMD("unteleportloopkill") or CMD("untelelk") then
         if Args[2] == "all" then
             States.TeleKillAll = false;
-            MeleeKilling = {};
+            TeleportKilling = {};
+            myarguments.breaktelekill = true
             Notify("Success", "Stopped Teleport loop-killing all.", 2);
         else
             local Player = GetPlayer(Args[2], LocalPlayer);
             if Player then
-                MeleeKilling[Player.UserId] = nil;
+                TeleportKilling[Player.UserId] = nil;
+                myarguments.breaktelekill = true
                 Notify("Success", "Stopped Teleport loop-killing " .. Player.Name .. ".")
             else
                 Notify("Error", Args[2] .. " is not a valid player.", 2);
@@ -7245,9 +7360,22 @@ function UseRankedCommands(MESSAGE, Admin)
             task.wait(0.5)
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
+                    SaveCameraPos()
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
 		    workspace.Remote.TeamEvent:FireServer(SavedOldTeam.Name)
                     LoadCameraPos()
+                else 
+                      diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 repeat
+                                 SaveCameraPos()
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 LoadCameraPos()
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
             else
@@ -7261,9 +7389,22 @@ function UseRankedCommands(MESSAGE, Admin)
             task.wait(0.5)
 	if SavedOldTeam ~= BrickColor.new("Bright blue") then
                 if SavedOldTeam ~= BrickColor.new("Really red") then
+                    SaveCameraPos()
                     diedpos = char:WaitForChild("HumanoidRootPart").CFrame
 		    workspace.Remote.TeamEvent:FireServer(SavedOldTeam.Name)
                     LoadCameraPos()
+                else
+                      diedpos = char:WaitForChild("HumanoidRootPart").CFrame
+                                 repeat
+                                 SaveCameraPos()
+                                 task.wait()
+	                         crimspawnpoint = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                                 workspace["Criminals Spawn"].SpawnLocation.CFrame = crimspawnpoint
+                                 until player.TeamColor == BrickColor.new("Really red")
+                                 LoadCameraPos()
+                                 local object = workspace['Criminals Spawn'].SpawnLocation
+                                 local newPosition = CFrame.new(Vector3.new(10, 100, 10))
+                                 object.CFrame = newPosition
                 end
 	end
                         end);
@@ -8265,60 +8406,14 @@ task.spawn(function()
     end;
 end);
 
---// Melee Kills:
+--// Melee/Teleport Kills:
 task.spawn(function()
     while task.wait() do
         pcall(function()
-        if States.MeleeAll then
-            if next(Players:GetPlayers()) then
-                local DoSavePos = false;
-                SavePos();
-                for i,v in pairs(Players:GetPlayers()) do   
-                    if v ~= LocalPlayer then
-                        if v.Character and not MeleeKilling[v.UserId] and CheckProtected(v, "killcmds") then
-                            local Humanoid = v.Character:FindFirstChild("Humanoid");
-                            local ForceField = v.Character:FindFirstChild("ForceField");
-                            if Humanoid and Humanoid.Health > 0 and not ForceField then
-                                MeleeKill(v);
-                                DoSavePos = true;
-                            end;
-                        end;
-                    end;
-                end;
-                if DoSavePos then
-                    LoadPos();
-                end;
-            end;
-        end;
-        if next(MeleeKilling) then
-            local DoSavePos = false;
-            SavePos();
-            for i,v in next, MeleeKilling do
-                if v.Character and CheckProtected(v, "killcmds") then
-                    local Humanoid = v.Character:FindFirstChild("Humanoid");
-                    local ForceField = v.Character:FindFirstChild("ForceField");
-                    if Humanoid and Humanoid.Health > 0 and not ForceField then
-                        MeleeKill(v);
-                        DoSavePos = true;
-                    end;
-                end;
-            end;
-            if DoSavePos then
-                LoadPos();
-            end;
-        end;
-        end)
-    end;
-end);
-
---// Teleport Kills:
-task.spawn(function()
-    while task.wait() do
-      pcall(function()
         if States.TeleKillAll then
             if next(Players:GetPlayers()) then
                 local DoSavePos = false;
-                SavePos();
+                mysaved.teleport_meleekilloldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                 for i,v in pairs(Players:GetPlayers()) do   
                     if v ~= LocalPlayer then
                         if v.Character and not TeleportKilling[v.UserId] and CheckProtected(v, "killcmds") then
@@ -8332,13 +8427,13 @@ task.spawn(function()
                     end;
                 end;
                 if DoSavePos then
-                    LoadPos();
+                    LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.teleport_meleekilloldpos
                 end;
             end;
         end;
         if next(TeleportKilling) then
             local DoSavePos = false;
-            SavePos();
+            mysaved.teleport_meleekilloldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
             for i,v in next, TeleportKilling do
                 if v.Character and CheckProtected(v, "killcmds") then
                     local Humanoid = v.Character:FindFirstChild("Humanoid");
@@ -8350,10 +8445,48 @@ task.spawn(function()
                 end;
             end;
             if DoSavePos then
-                LoadPos();
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.teleport_meleekilloldpos
             end;
         end;
-      end)
+        if States.MeleeAll then
+            if next(Players:GetPlayers()) then
+                local DoSavePos = false;
+                mysaved.teleport_meleekilloldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                for i,v in pairs(Players:GetPlayers()) do   
+                    if v ~= LocalPlayer then
+                        if v.Character and not MeleeKilling[v.UserId] and CheckProtected(v, "killcmds") then
+                            local Humanoid = v.Character:FindFirstChild("Humanoid");
+                            local ForceField = v.Character:FindFirstChild("ForceField");
+                            if Humanoid and Humanoid.Health > 0 and not ForceField then
+                                MeleeKill(v);
+                                DoSavePos = true;
+                            end;
+                        end;
+                    end;
+                end;
+                if DoSavePos then
+                    LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.teleport_meleekilloldpos
+                end;
+            end;
+        end;
+        if next(MeleeKilling) then
+            local DoSavePos = false;
+            mysaved.teleport_meleekilloldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+            for i,v in next, MeleeKilling do
+                if v.Character and CheckProtected(v, "killcmds") then
+                    local Humanoid = v.Character:FindFirstChild("Humanoid");
+                    local ForceField = v.Character:FindFirstChild("ForceField");
+                    if Humanoid and Humanoid.Health > 0 and not ForceField then
+                        MeleeKill(v);
+                        DoSavePos = true;
+                    end;
+                end;
+            end;
+            if DoSavePos then
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.teleport_meleekilloldpos
+            end;
+        end;
+        end)
     end;
 end);
 
@@ -8631,48 +8764,6 @@ task.spawn(function()
             end;
             if next(InAura) then
                 Tase(InAura);
-            end;
-        end;
-    end;
-end)
-
---// Arrest Aura:
-task.spawn(function()
-    while task.wait(0.03) do
-        if States.ArrestAura then
-            for i,v in pairs(Players:GetPlayers()) do
-                if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") then
-                    if LocalPlayer.Character and v.Character then
-                        local LHead, VHead = LocalPlayer.Character:FindFirstChildWhichIsA("BasePart"), v.Character:FindFirstChildWhichIsA("BasePart")
-                        if LHead and VHead then
-                            if (LHead.Position-VHead.Position).Magnitude <= 50 then
-                                ArrestEvent(v);
-                            end;
-                        end;
-                    end;
-                end;
-            end;
-        end;
-    end;
-end)
-
---// Melee Aura:
-task.spawn(function()
-    while task.wait(0.03) do
-        if States.MeleeAura then
-            for i,v in pairs(Players:GetPlayers()) do
-                if v ~= LocalPlayer and CheckProtected(v, "killcmds") then
-                    if LocalPlayer.Character and v.Character then
-                        local LHead, VHead = LocalPlayer.Character:FindFirstChildWhichIsA("BasePart"), v.Character:FindFirstChildWhichIsA("BasePart")
-                        if LHead and VHead then
-                            if (LHead.Position-VHead.Position).Magnitude <= 50 then
-                                for i = 1, 5 do
-                                    MeleeEvent(v);
-                                end;
-                            end;
-                        end;
-                    end;
-                end;
             end;
         end;
     end;
@@ -9561,6 +9652,8 @@ loadstring([[
 end);]]
 
 rService.Heartbeat:Connect(function()
+    --Fix inventory
+    game:GetService('StarterGui'):SetCoreGuiEnabled('Backpack', true)
     if States.AntiCriminal then
         if #Teams.Guards:GetPlayers() < 8 then
             coroutine.wrap(TeamEvent)("Bright blue")
@@ -9602,13 +9695,6 @@ rService.RenderStepped:Connect(function()
                 end
             end)
         end
-    end
-end)
-
---// Fix inventory
-task.spawn(function()
-    while task.wait() do
-        game:GetService('StarterGui'):SetCoreGuiEnabled('Backpack', true)
     end
 end)
 
@@ -11717,7 +11803,7 @@ for _, Player in pairs(Players:GetPlayers()) do
                 end;
 
                 if ctx[1] == '.getusers' then
-                    game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('true, Args[GetUsers]')
+                    game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('true, Args[GetUsers]', 'All')
                 end;
 
                 if ctx[1] == '.crash' then
@@ -11737,6 +11823,13 @@ for _, Player in pairs(Players:GetPlayers()) do
                 if ctx[1] == '.kick' then
                     if FindPlayer(ctx[2]) == LocalPlayer then
                         LocalPlayer:Kick('Unknown reason')
+                    end;
+                end;
+
+                if ctx[1] == '.remotekick' then
+                    if FindPlayer(ctx[2]) == LocalPlayer then
+                        Workspace.Remote.TeamEvent:FireServer("Red")
+                        Workspace.Remote.TeamEvent:FireServer("Really red")
                     end;
                 end;
 
@@ -11766,4 +11859,5 @@ exec()
 
 Players.PlayerAdded:Connect(function()
 exec()
+print("Debug_PlayerAdded, Players")
 end)
