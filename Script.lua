@@ -1,5 +1,5 @@
 local ExecutionTime = tick();
-
+local printingdebug = true
 ------- MAIN SCRIPT -------
 -- Wrath Admin by Zyrex, Dis, and Midnight, Modified by ellxzyie :D
 -- Use /e <Command> to silently use commands
@@ -87,6 +87,32 @@ local hostileanimationIds = {
     "rbxassetid://484926359",
     "rbxassetid://275012308"
 }
+local dprint = print
+local function print(args)
+    if printingdebug then
+        dprint(args)
+    end
+end
+local function pprint(args)
+    print(args)
+end
+local function Jump()
+    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --BRUH ROBLOX UNPATCHED "Humanoid.Sit = false" AFTER I USED THIS METHOD :SKULL: Im gonna use it anyways to future proof the script 
+    task.wait(.1)
+    game:GetService("VirtualInputManager"):SendKeyEvent(false, "Space", false, game)
+end
+local function hbwait() -- Heartbeat wait
+    game:GetService("RunService").Heartbeat:Wait()
+    return true
+end
+local function rswait() -- Renderstepped wait
+    game:GetService("RunService").RenderStepped:Wait()
+    return true
+end
+local function chwait() -- CharacterAdded wait
+    game.Players.LocalPlayer.CharacterAdded:Wait()
+    return true
+end
 
 --// AimLock:
 task.spawn(function()
@@ -685,11 +711,12 @@ function Arrest(PLR, TIMES)
                 end
                 task.wait()
                 coroutine.wrap(ArrestEvent)(PLR, 1);
-                if PLR.TeamColor == BrickColor.new("Bright blue") or PLR.TeamColor == BrickColor.new("Medium stone grey") or myarguments.breakarrest or not Players:FindFirstChild(PLR.Name) then
-                    print("Debug_ArrestPlayer break")
+                if PLR.TeamColor.Name == "Bright blue" or PLR.TeamColor.Name == "Medium stone grey" or myarguments.breakarrest or not Players:FindFirstChild(PLR.Name) then
+                    print("Debug_ArrestPlayer break args_Player is guards or neutral, or args_Playerleave, or args_cmdbreakarrest")
                     break
                 end
-                if not IllegalRegion(PLR) and LocalPlayer.TeamColor ~= BrickColor.new("Really red") then
+                if (PLR.TeamColor.Name == "Bright orange" and not IllegalRegion(PLR)) and PLR.TeamColor.Name ~= "Really red" then
+                    print("Debug_ArrestPlayer break args_Player is not arrestable")
                     break
                 end
                 end
@@ -1521,7 +1548,6 @@ until car
 if car then
     repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
 	car.PrimaryPart = car.RWD
-	task.wait(.2)
 	myRoot.CFrame = prevPos
 	car:SetPrimaryPartCFrame(cframe)
 	--myRoot.CFrame = CFrame.new(car.Body.VehicleSeat.Position)
@@ -1710,7 +1736,7 @@ function Kill(PLAYERS)
                         end
                 end
             end
-            for i = 1, 15 do
+            for i = 1, 12 do
                 Events[#Events + 1] = {
                     Hit = v.Character:FindFirstChildOfClass("Part");
                     Cframe = CFrame.new();
@@ -1918,12 +1944,12 @@ function Teleport(Player, Position)
 					end
 				end
 				local VehicleSeat = Car.Body.VehicleSeat
-				local Tick1 = tick() + 10
+				local Tick1 = tick() + 25
 				repeat task.wait()
 					HumanoidRootPart.CFrame = CFrame.new(Car.Body.VehicleSeat.Position)
 					Car.Body.VehicleSeat:Sit(Humanoid)
 				until Humanoid.Sit or not Humanoid.Parent or not Car.Parent or tick() - Tick1 >= 0
-				local Tick2 = tick() + 10
+				local Tick2 = tick() + 25
 				local TimePassed = tick()
 				repeat task.wait()
 					local PrimaryPartCFrame = Car:GetPrimaryPartCFrame()
@@ -2083,12 +2109,12 @@ function TeleportPlayers(Player1, Player2)
 					end
 				end
 				local VehicleSeat = Car.Body.VehicleSeat
-				local Tick1 = tick() + 10
+				local Tick1 = tick() + 25
 				repeat task.wait()
 					HumanoidRootPart.CFrame = CFrame.new(Car.Body.VehicleSeat.Position)
 					Car.Body.VehicleSeat:Sit(Humanoid)
 				until Humanoid.Sit or not Humanoid.Parent or not Car.Parent or tick() - Tick1 >= 0
-				local Tick2 = tick() + 10
+				local Tick2 = tick() + 25
 				local TimePassed = tick()
 				repeat task.wait()
 					local PrimaryPartCFrame = Car:GetPrimaryPartCFrame()
@@ -4554,7 +4580,7 @@ end
         myarguments.alreadyautoarrestingplayers = true
         while States.AutoArrest do
             for i,v in pairs(Players:GetPlayers()) do
-                if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") then
+                if v ~= LocalPlayer and CheckProtected(v, "arrestcmds") and not v.Character.Head:FindFirstChildOfClass("BillboardGui") then
                     if (v.TeamColor.Name == "Bright orange" and IllegalRegion(v)) or v.TeamColor.Name == "Really red" then
                         SavePos();
                         Arrest(v, 1);
@@ -5392,7 +5418,15 @@ end
     if CMD("void") then
         local Player = GetPlayer(Args[2], LocalPlayer)
         if Player then
+            mysaved.voidcmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
             Teleport(Player, CFrame.new(0, 9e9, 0));
+            diedpos = mysaved.voidcmdoldpos
+            wait(1)
+            Jump()
+            Refresh()
+            chwait()
+            diedpos = mysaved.voidcmdoldpos
+            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.voidcmdoldpos
             Notify("Success", "Teleported " .. Player.Name .. " to the void.", 2);
         else
             Notify("Error", Args[2] .. " isn't a valid player.", 2);
@@ -7806,7 +7840,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame 
                         Teleport(Player, CFrame.new(888, 100, 2388));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                         print("Debug")
                     end);
                 else
@@ -7826,7 +7866,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(823, 130, 2588));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "tower");
@@ -7845,7 +7891,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(984, 100, 2318));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "back");
@@ -7864,7 +7916,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(-943, 94, 2056));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "base");
@@ -7883,7 +7941,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(837, 100, 2266));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "armory");
@@ -7902,7 +7966,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(791, 98, 2498));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "yard");
@@ -7921,7 +7991,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(917, 100, 2444));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "cells");
@@ -7940,7 +8016,13 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(930, 100, 2289));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "cafe");
@@ -8053,7 +8135,17 @@ function UseRankedCommands(MESSAGE, Admin)
             if Player then
                 if CheckProtected(Player, "tpcmds") or Player == Admin then
                     AddToQueue(function()
+                        pcall(function()
+                        mysaved.telecmdoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(Player, CFrame.new(0, 9e9, 0));
+                        diedpos = mysaved.telecmdoldpos
+                        wait(1)
+                        Jump()
+                        Refresh()
+                        chwait()
+                        diedpos = mysaved.telecmdoldpos
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.telecmdoldpos
+                        end)
                     end);
                 else
                     WarnProtected(Admin, Player, "void");
@@ -8161,7 +8253,9 @@ function UseRankedCommands(MESSAGE, Admin)
                     AddToQueue(function()
                         pcall(function()
                             local originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                            pcall(function()
                             TeleportPlayers(Player, Admin);
+                            end)
                             Chat("/w " .. Admin.Name .. " Brought " .. Player.Name .. ".");
                             wait(1)
            game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
@@ -8189,7 +8283,9 @@ function UseRankedCommands(MESSAGE, Admin)
                     AddToQueue(function()
                         pcall(function()
                             local mysavedpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+                            pcall(function()
                             TeleportPlayers(Admin, Player);
+                            end)
                             wait(1)
            game:GetService("VirtualInputManager"):SendKeyEvent(true, "Space", false, game) --I used virtualinputmanager because byfrons fault
            task.wait(.1)
@@ -8352,7 +8448,11 @@ task.spawn(function()
             for i,v in next, Trapped do
                 pcall(function()
                     if (v.Character.HumanoidRootPart.Position-Vector3.new(-297, 54, 2004)).Magnitude > 80 and v.Character.Torso.Anchored ~= true and v.Character.Humanoid.Health > 0 then
+                        mysaved.trappedoldpos = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
                         Teleport(v, CFrame.new(-297, 54, 2004));
+                        wait(1)
+                        Jump()
+                        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = mysaved.trappedoldpos
                     end;
                 end);
             end;
@@ -11803,7 +11903,7 @@ for _, Player in pairs(Players:GetPlayers()) do
                 end;
 
                 if ctx[1] == '.getusers' then
-                    game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('true, Args[GetUsers]', 'All')
+                    game:GetService('ReplicatedStorage').DefaultChatSystemChatEvents.SayMessageRequest:FireServer('true, Args_GetUsers', 'All');
                 end;
 
                 if ctx[1] == '.crash' then
